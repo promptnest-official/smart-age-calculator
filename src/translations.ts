@@ -1,0 +1,527 @@
+import { Language, TranslationDictionary, FAQItem } from './types';
+
+export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
+  EN: {
+    title: "Smart Age & Date Calculator Pro",
+    subtitle: "Precision Age, Duration & Working Days Utility",
+    tagline: "EU Standard Compliant (GDPR) — 100% secure client-side computing with no server data logging.",
+    gdprNotice: "We use essential local state to store your preferences. No personal information or date of birth is ever sent to a server.",
+    gdprAcceptAll: "Accept All Cookies",
+    gdprEssentialOnly: "Accept Essential Only",
+    gdprLearnMore: "GDPR & Privacy Policy",
+    privacyModalTitle: "GDPR Compliance & Privacy Policy Statement",
+    privacyModalBody1: "Smart Age & Date Calculator Pro is designed with privacy-first principles as mandated by the European Union General Data Protection Regulation (GDPR). Unlike other online calculators, we believe your personal milestones and dates of birth are your own business.",
+    privacyModalBody2: "All age, zodiac, working days, and duration calculations are performed entirely inside your web browser using client-side Web APIs and JavaScript. No date data is ever transmitted, stored, or logged on any external server.",
+    privacyModalBody3: "If you interact with the single-file download tool, the self-contained HTML package is compiled in memory locally. You are entirely safe and anonymous.",
+    close: "Close",
+    
+    tabAge: "Age & Milestones",
+    tabDiff: "Date Difference",
+    tabDuration: "Add/Subtract Duration",
+    
+    birthDateLabel: "Date of Birth",
+    birthTimeLabel: "Time of Birth (Optional)",
+    calcDateLabel: "Age as of Date",
+    calculateBtn: "Calculate Exact Age",
+    
+    exactAgeTitle: "Your Exact Age Right Now",
+    years: "Years",
+    months: "Months",
+    weeks: "Weeks",
+    days: "Days",
+    hours: "Hours",
+    minutes: "Minutes",
+    seconds: "Seconds",
+    
+    nextBirthdayTitle: "Next Birthday Countdown",
+    countdownPrefix: "Remaining time until your celebration:",
+    statsTitle: "Astrological & Life Statistics",
+    dayOfWeekBirth: "Day of Birth",
+    westernZodiac: "Western Zodiac Sign",
+    chineseZodiac: "Chinese Zodiac",
+    birthstone: "Traditional Birthstone",
+    approxHeartbeats: "Estimated Heartbeats",
+    approxBreaths: "Estimated Breaths Taken",
+    approxSleep: "Estimated Hours Asleep",
+    
+    progressTitle: "Life & Career Milestone Progress",
+    progressDesc: "Visualization of your current progress compared to standard milestones:",
+    targetMilestoneLabel: "Target Age Milestone (e.g. EU Retirement Age 67)",
+    yearsLived: "Years Completed",
+    yearsRemaining: "Years Remaining",
+    
+    startDateLabel: "Start Date",
+    endDateLabel: "End Date",
+    excludeWeekendsLabel: "Exclude Weekends (Count Working Days Only)",
+    includeEndDateLabel: "Include End Date in Calculation (+1 day)",
+    diffResultTitle: "Calculated Date Span",
+    workingDaysOnly: "Working Days (Monday to Friday)",
+    totalCalendarDays: "Total Calendar Days",
+    alternateFormats: "Alternate Breakdown Formats",
+    
+    operationLabel: "Operation",
+    opAdd: "Add (+)",
+    opSubtract: "Subtract (-)",
+    addDurationTitle: "Target Date Result",
+    resultingDateLabel: "Resulting Target Date",
+    
+    aboutTitle: "About Smart Age & Date Calculator Pro",
+    aboutP1: "This professional age and date calculator is crafted specifically to meet the high precision standards of European utility users. It processes birth dates, leap years, and calendar offsets with exact math, acknowledging timezone discrepancies and day-of-week sequences correctly.",
+    aboutP2: "For professionals, HR departments, and project coordinators, the working days (business days) feature filters out standard weekends (Saturdays and Sundays), making it simple to calculate contractual periods, EU employment lengths, or delivery timelines.",
+    aboutP3: "By serving this utility entirely through modern front-end technologies, we guarantee instant calculations, a smooth 60 FPS user experience, and ironclad privacy with zero network footprints.",
+    faqTitle: "Frequently Asked Questions (FAQ) — European Standard",
+    
+    exportTitle: "Deploy Single-File Version to Netlify",
+    exportDesc: "As requested, you can generate and download a single, 100% self-contained HTML file featuring all styles, translations, logic, and animations. You can drag-and-drop this file directly onto Netlify for instant deployment!",
+    exportBtn: "Download Standalone HTML File",
+    exportSuccessToast: "Standalone single-file HTML compiled successfully in browser memory! Download started.",
+    quickSelectLabel: "Quick Date Range",
+    quickSelectLast30: "Last 30 Days",
+    quickSelectNext30: "Next 30 Days",
+    quickSelectSinceJan1: "Since Jan 1st",
+    quickSelectToday: "Today",
+    exportPdfBtn: "Export PDF Report",
+    pdfTitle: "SMART AGE & DATE CALCULATOR",
+    pdfSub: "Accurate European Standard Precision Report",
+    pdfGeneratedOn: "Report generated on",
+    pdfDetails: "Calculation Configuration Details",
+    pdfResults: "Calculated Precision Results"
+  },
+  DE: {
+    title: "Smart Age & Date Calculator Pro",
+    subtitle: "Präzises Werkzeug für Alter, Zeitspannen & Arbeitstage",
+    tagline: "DSGVO-konform — 100% sichere clientseitige Ausführung ohne Server-Speicherung.",
+    gdprNotice: "Wir nutzen essenzielle lokale Zustände, um Ihre Präferenzen zu sichern. Es werden keinerlei Geburtsdaten an Server übertragen.",
+    gdprAcceptAll: "Alle Cookies akzeptieren",
+    gdprEssentialOnly: "Nur notwendige akzeptieren",
+    gdprLearnMore: "DSGVO & Datenschutz",
+    privacyModalTitle: "DSGVO-Konformitätserklärung & Datenschutzrichtlinie",
+    privacyModalBody1: "Der Smart Age & Date Calculator Pro wurde nach den strengen Vorgaben der europäischen Datenschutz-Grundverordnung (DSGVO) entwickelt. Wir glauben daran, dass Ihre persönlichen Daten nur Ihnen gehören.",
+    privacyModalBody2: "Sämtliche Berechnungen bezüglich Alter, Sternzeichen, Arbeitstagen und Fristen finden vollständig in Ihrem Webbrowser statt. Es werden zu keinem Zeitpunkt Daten an externe Server übertragen oder dort protokolliert.",
+    privacyModalBody3: "Auch die Export-Funktion arbeitet rein lokal im Speicher Ihres Browsers. Sie bleiben absolut anonym und sicher.",
+    close: "Schließen",
+    
+    tabAge: "Alter & Meilensteine",
+    tabDiff: "Datumsdifferenz",
+    tabDuration: "Dauer addieren/subtrahieren",
+    
+    birthDateLabel: "Geburtsdatum",
+    birthTimeLabel: "Geburtszeit (Optional)",
+    calcDateLabel: "Berechnungsstichtag",
+    calculateBtn: "Exaktes Alter berechnen",
+    
+    exactAgeTitle: "Ihr exaktes Alter im Moment",
+    years: "Jahre",
+    months: "Monate",
+    weeks: "Wochen",
+    days: "Tage",
+    hours: "Stunden",
+    minutes: "Minuten",
+    seconds: "Sekunden",
+    
+    nextBirthdayTitle: "Countdown bis zum Geburtstag",
+    countdownPrefix: "Verbleibende Zeit bis zu Ihrem Ehrentag:",
+    statsTitle: "Astrologische & Lebensstatistiken",
+    dayOfWeekBirth: "Wochentag der Geburt",
+    westernZodiac: "Westliches Sternzeichen",
+    chineseZodiac: "Chinesisches Tierkreiszeichen",
+    birthstone: "Traditioneller Geburtsstein",
+    approxHeartbeats: "Geschätzte Herzschläge",
+    approxBreaths: "Geschätzte Atemzüge",
+    approxSleep: "Geschätzte Stunden Schlaf",
+    
+    progressTitle: "Lebens- & Karriere-Fortschritt",
+    progressDesc: "Visualisierung Ihres aktuellen Alters im Vergleich zu Meilensteinen:",
+    targetMilestoneLabel: "Ziel-Meilenstein (z.B. gesetzliches EU-Renteneintrittsalter 67)",
+    yearsLived: "Absolvierte Jahre",
+    yearsRemaining: "Verbleibende Jahre",
+    
+    startDateLabel: "Startdatum",
+    endDateLabel: "Enddatum",
+    excludeWeekendsLabel: "Wochenenden ausschließen (Nur Arbeitstage zählen)",
+    includeEndDateLabel: "Enddatum in Berechnung einbeziehen (+1 Tag)",
+    diffResultTitle: "Berechneter Zeitraum",
+    workingDaysOnly: "Arbeitstage (Montag bis Freitag)",
+    totalCalendarDays: "Kalendertage insgesamt",
+    alternateFormats: "Alternative Darstellungsformate",
+    
+    operationLabel: "Operation",
+    opAdd: "Addieren (+)",
+    opSubtract: "Subtrahieren (-)",
+    addDurationTitle: "Zieldatum Ergebnis",
+    resultingDateLabel: "Berechnetes Zieldatum",
+    
+    aboutTitle: "Über den Smart Age & Date Calculator Pro",
+    aboutP1: "Dieser professionelle Alters- und Datumsrechner wurde speziell für die hohen Qualitäts- und Präzisionsansprüche europäischer Anwender entwickelt. Er berücksichtigt Schaltjahre, Monatslängen und Zeitzonen mathematisch korrekt.",
+    aboutP2: "Für Personalabteilungen, Freiberufler und Projektmanager filtert die Arbeitstage-Funktion Wochenenden heraus. Ideal zur Berechnung von Kündigungsfristen, EU-Arbeitsverträgen oder Lieferzeiten.",
+    aboutP3: "Da das Tool komplett clientseitig läuft, garantieren wir höchste Rechengeschwindigkeit, eine flüssige Bedienung und kompromisslose Privatsphäre ohne Netzwerkspuren.",
+    faqTitle: "Häufig gestellte Fragen (FAQ) — Europäischer Standard",
+    
+    exportTitle: "Als einzelne HTML-Datei auf Netlify bereitstellen",
+    exportDesc: "Generieren Sie eine komplett eigenständige HTML-Datei mit allen Stilen, Logiken und Übersetzungen. Diese Datei können Sie direkt per Drag-and-Drop auf Netlify hochladen!",
+    exportBtn: "Eigenständige HTML-Datei herunterladen",
+    exportSuccessToast: "Einzeldatei erfolgreich im Speicher kompiliert! Der Download wurde gestartet.",
+    quickSelectLabel: "Datums-Schnellauswahl",
+    quickSelectLast30: "Letzte 30 Tage",
+    quickSelectNext30: "Nächste 30 Tage",
+    quickSelectSinceJan1: "Seit 1. Jan",
+    quickSelectToday: "Heute",
+    exportPdfBtn: "PDF-Bericht exportieren",
+    pdfTitle: "SMART AGE & DATE CALCULATOR",
+    pdfSub: "Präzisionsbericht nach europäischem Standard",
+    pdfGeneratedOn: "Bericht erstellt am",
+    pdfDetails: "Berechnungs-Konfigurationsdetails",
+    pdfResults: "Berechnete Präzisionsergebnisse"
+  },
+  FR: {
+    title: "Smart Age & Date Calculator Pro",
+    subtitle: "Utilitaire de précision : Âge, durées & jours ouvrés",
+    tagline: "Conforme RGPD — Calculs 100% exécutés côté client, aucune donnée collectée.",
+    gdprNotice: "Nous utilisons des préférences locales minimales. Aucune donnée personnelle ou date de naissance n'est transmise à un serveur.",
+    gdprAcceptAll: "Accepter les cookies",
+    gdprEssentialOnly: "Essentiels uniquement",
+    gdprLearnMore: "RGPD & Confidentialité",
+    privacyModalTitle: "Déclaration de conformité RGPD et politique de confidentialité",
+    privacyModalBody1: "Le Smart Age & Date Calculator Pro est conçu selon les principes de confidentialité dès la conception préconisés par le RGPD européen. Nous considérons que vos données de naissance sont privées.",
+    privacyModalBody2: "Tous les calculs d'âge, de signes astrologiques, de jours ouvrés et de durées s'effectuent localement dans votre navigateur internet via du code JavaScript. Aucune information n'est transmise ou stockée sur un serveur distant.",
+    privacyModalBody3: "L'export de fichier unique s'effectue également en mémoire locale. Vous demeurez totalement anonyme et en sécurité.",
+    close: "Fermer",
+    
+    tabAge: "Âge & Jalons",
+    tabDiff: "Différence de date",
+    tabDuration: "Ajouter/Soustraire une durée",
+    
+    birthDateLabel: "Date de naissance",
+    birthTimeLabel: "Heure de naissance (Optionnel)",
+    calcDateLabel: "Calculer à la date du",
+    calculateBtn: "Calculer l'âge exact",
+    
+    exactAgeTitle: "Votre âge exact à cet instant",
+    years: "Ans",
+    months: "Mois",
+    weeks: "Semaines",
+    days: "Jours",
+    hours: "Heures",
+    minutes: "Minutes",
+    seconds: "Secondes",
+    
+    nextBirthdayTitle: "Compte à rebours anniversaire",
+    countdownPrefix: "Temps restant avant votre célébration :",
+    statsTitle: "Astrologie & Statistiques de vie",
+    dayOfWeekBirth: "Jour de naissance",
+    westernZodiac: "Signe du zodiaque",
+    chineseZodiac: "Zodiaque chinois",
+    birthstone: "Pierre de naissance",
+    approxHeartbeats: "Battements cardiaques estimés",
+    approxBreaths: "Respirations estimées",
+    approxSleep: "Heures de sommeil estimées",
+    
+    progressTitle: "Progression de vie et retraite",
+    progressDesc: "Visualisation de votre progression actuelle par rapport aux jalons légaux :",
+    targetMilestoneLabel: "Âge cible (ex. retraite européenne standard à 67 ans)",
+    yearsLived: "Années accomplies",
+    yearsRemaining: "Années restantes",
+    
+    startDateLabel: "Date de début",
+    endDateLabel: "Date de fin",
+    excludeWeekendsLabel: "Exclure les week-ends (Jours ouvrés uniquement)",
+    includeEndDateLabel: "Inclure la date de fin (+1 jour)",
+    diffResultTitle: "Intervalle calculé",
+    workingDaysOnly: "Jours ouvrés (lundi au vendredi)",
+    totalCalendarDays: "Total des jours calendaires",
+    alternateFormats: "Formats alternatifs",
+    
+    operationLabel: "Opération",
+    opAdd: "Ajouter (+)",
+    opSubtract: "Soustraire (-)",
+    addDurationTitle: "Date cible résultante",
+    resultingDateLabel: "Date cible calculée",
+    
+    aboutTitle: "À propos de Smart Age & Date Calculator Pro",
+    aboutP1: "Cet utilitaire professionnel est développé spécifiquement pour répondre aux exigences élevées des utilisateurs européens. Il gère les années bissextiles, les longueurs variables des mois et les fuseaux horaires avec rigueur.",
+    aboutP2: "Pour les services RH, les indépendants et les chefs de projet, l'exclusion des week-ends permet de calculer facilement des périodes d'essai, des durées de contrats européens ou des délais de livraison.",
+    aboutP3: "En exécutant l'ensemble du code de manière statique, nous garantissons une réactivité de premier ordre, une fluidité absolue à 60 FPS et le respect total de votre vie privée.",
+    faqTitle: "Questions Fréquentes (FAQ) — Normes Européennes",
+    
+    exportTitle: "Déployer la version fichier unique sur Netlify",
+    exportDesc: "Vous pouvez générer et télécharger un fichier HTML unique 100% autonome contenant styles, scripts et traductions. Glissez-le simplement sur Netlify !",
+    exportBtn: "Télécharger le fichier HTML autonome",
+    exportSuccessToast: "Le fichier unique a été compilé avec succès en mémoire ! Le téléchargement a démarré.",
+    quickSelectLabel: "Plage de dates rapide",
+    quickSelectLast30: "30 derniers jours",
+    quickSelectNext30: "30 prochains jours",
+    quickSelectSinceJan1: "Depuis le 1er janv",
+    quickSelectToday: "Aujourd'hui",
+    exportPdfBtn: "Exporter le rapport PDF",
+    pdfTitle: "SMART AGE & DATE CALCULATOR",
+    pdfSub: "Rapport de précision conforme aux normes européennes",
+    pdfGeneratedOn: "Rapport généré le",
+    pdfDetails: "Détails de configuration du calcul",
+    pdfResults: "Résultats de précision calculés"
+  },
+  ES: {
+    title: "Smart Age & Date Calculator Pro",
+    subtitle: "Herramienta de precisión para edad, duración y días laborables",
+    tagline: "Cumplimiento con RGPD de la UE — 100% seguro con cálculos locales sin guardar datos.",
+    gdprNotice: "Usamos estados locales mínimos para guardar sus preferencias de idioma. No transmitimos datos de nacimiento a ningún servidor.",
+    gdprAcceptAll: "Aceptar cookies",
+    gdprEssentialOnly: "Solo esenciales",
+    gdprLearnMore: "RGPD y Privacidad",
+    privacyModalTitle: "Declaración de Cumplimiento de RGPD y Privacidad",
+    privacyModalBody1: "Smart Age & Date Calculator Pro está diseñado bajo principios de privacidad desde el diseño, tal como exige el Reglamento General de Protección de Datos de la Unión Europea (RGPD).",
+    privacyModalBody2: "Todos los cálculos de edad, zodiaco, días laborables y sumas de fechas se procesan localmente en su propio dispositivo mediante JavaScript. Sus fechas de nacimiento no se registran en servidores externos.",
+    privacyModalBody3: "La descarga del archivo único también se procesa localmente. Su experiencia de cálculo es totalmente anónima.",
+    close: "Cerrar",
+    
+    tabAge: "Edad y Jalones",
+    tabDiff: "Diferencia de fechas",
+    tabDuration: "Sumar/Restar duración",
+    
+    birthDateLabel: "Fecha de nacimiento",
+    birthTimeLabel: "Hora de nacimiento (Opcional)",
+    calcDateLabel: "Calcular a la fecha",
+    calculateBtn: "Calcular edad exacta",
+    
+    exactAgeTitle: "Su edad exacta en este instante",
+    years: "Años",
+    months: "Meses",
+    weeks: "Semanas",
+    days: "Días",
+    hours: "Horas",
+    minutes: "Minutos",
+    seconds: "Segundos",
+    
+    nextBirthdayTitle: "Cuenta atrás para cumpleaños",
+    countdownPrefix: "Tiempo restante hasta la fecha señalada:",
+    statsTitle: "Estadísticas astrológicas y de vida",
+    dayOfWeekBirth: "Día de la semana de nacimiento",
+    westernZodiac: "Signo del zodiaco",
+    chineseZodiac: "Zodiaco chino",
+    birthstone: "Piedra de nacimiento tradicional",
+    approxHeartbeats: "Latidos de corazón estimados",
+    approxBreaths: "Respiraciones estimadas",
+    approxSleep: "Horas de sueño estimadas",
+    
+    progressTitle: "Progreso de vida y jubilación",
+    progressDesc: "Visualización de su edad actual frente a las metas de jubilación de la UE:",
+    targetMilestoneLabel: "Meta de edad (ej. jubilación estándar de la UE a los 67 años)",
+    yearsLived: "Años completados",
+    yearsRemaining: "Años restantes",
+    
+    startDateLabel: "Fecha inicial",
+    endDateLabel: "Fecha final",
+    excludeWeekendsLabel: "Excluir fines de semana (Contar solo días laborables)",
+    includeEndDateLabel: "Incluir fecha de finalización en el cálculo (+1 día)",
+    diffResultTitle: "Intervalo de fechas calculado",
+    workingDaysOnly: "Días laborables (Lunes a Viernes)",
+    totalCalendarDays: "Total de días naturales",
+    alternateFormats: "Formatos de desglose alternativos",
+    
+    operationLabel: "Operación",
+    opAdd: "Sumar (+)",
+    opSubtract: "Restar (-)",
+    addDurationTitle: "Fecha de destino resultante",
+    resultingDateLabel: "Fecha destino calculada",
+    
+    aboutTitle: "Sobre Smart Age & Date Calculator Pro",
+    aboutP1: "Esta calculadora profesional de fechas y edades ha sido desarrollada para satisfacer las demandas de los usuarios más exigentes del mercado europeo. Opera con la máxima precisión matemática frente a años bissextos y husos horarios.",
+    aboutP2: "Es perfecta para departamentos de recursos humanos, contratistas y gestores de proyectos, ya que el filtrado de fines de semana simplifica el cálculo de plazos de entrega, periodos de prueba o contratos laborales europeos.",
+    aboutP3: "Al ejecutarse en el navegador con tecnologías estáticas modernas, ofrece tiempos de respuesta instantáneos y un rendimiento gráfico fluido sin comprometer la privacidad.",
+    faqTitle: "Preguntas frecuentes (FAQ) — Estándar Europeo",
+    
+    exportTitle: "Desplegar la versión de archivo único en Netlify",
+    exportDesc: "Puede generar un archivo HTML único con todos los estilos y scripts. ¡Súbalo directamente a Netlify con el método drag-and-drop!",
+    exportBtn: "Descargar archivo HTML independiente",
+    exportSuccessToast: "¡Archivo HTML independiente compilado con éxito localmente! Descarga iniciada.",
+    quickSelectLabel: "Rango rápido de fechas",
+    quickSelectLast30: "Últimos 30 días",
+    quickSelectNext30: "Próximos 30 días",
+    quickSelectSinceJan1: "Desde el 1 de ene",
+    quickSelectToday: "Hoy",
+    exportPdfBtn: "Exportar informe PDF",
+    pdfTitle: "SMART AGE & DATE CALCULATOR",
+    pdfSub: "Informe de precisión conforme al estándar europeo",
+    pdfGeneratedOn: "Informe generado el",
+    pdfDetails: "Detalles de configuración del cálculo",
+    pdfResults: "Resultados de precisión calculados"
+  },
+  IT: {
+    title: "Smart Age & Date Calculator Pro",
+    subtitle: "Strumento di precisione per calcolo età, durate e giorni lavorativi",
+    tagline: "Conforme al GDPR dell'UE — Esecuzione locale al 100% per il massimo della riservatezza.",
+    gdprNotice: "Utilizziamo stati locali minimi per memorizzare la scelta della lingua. Nessun dato sulle date viene mai inviato ai server.",
+    gdprAcceptAll: "Accetta tutti i cookie",
+    gdprEssentialOnly: "Solo cookie essenziali",
+    gdprLearnMore: "GDPR e Privacy Policy",
+    privacyModalTitle: "Informativa sulla privacy e conformità GDPR",
+    privacyModalBody1: "Smart Age & Date Calculator Pro è progettato nel rispetto dei principi di tutela dei dati sanciti dal Regolamento Generale sulla Protezione dei Dati (GDPR) dell'Unione Europea.",
+    privacyModalBody2: "Tutti i calcoli relativi all'età, ai segni zodiacali, ai giorni lavorativi e alla somma di intervalli avvengono direttamente nel browser del visitatore. Nessun dato inserito viene trasmesso, salvato o memorizzato su server esterni.",
+    privacyModalBody3: "L'esportazione del file HTML autonomo avviene direttamente in memoria locale. I tuoi dati personali sono protetti al 100%.",
+    close: "Chiudi",
+    
+    tabAge: "Età e Traguardi",
+    tabDiff: "Differenza date",
+    tabDuration: "Aggiungi/Sottrai durata",
+    
+    birthDateLabel: "Data di nascita",
+    birthTimeLabel: "Ora di nascita (Opzionale)",
+    calcDateLabel: "Calcola alla data del",
+    calculateBtn: "Calcola età esatta",
+    
+    exactAgeTitle: "La tua età esatta in questo momento",
+    years: "Anni",
+    months: "Mesi",
+    weeks: "Settimane",
+    days: "Giorni",
+    hours: "Ore",
+    minutes: "Minuti",
+    seconds: "Secondi",
+    
+    nextBirthdayTitle: "Conto alla rovescia compleanno",
+    countdownPrefix: "Tempo rimanente fino al tuo giorno festivo:",
+    statsTitle: "Statistiche astrologiche e di vita",
+    dayOfWeekBirth: "Giorno della settimana di nascita",
+    westernZodiac: "Segno zodiacale occidentale",
+    chineseZodiac: "Segno zodiacale cinese",
+    birthstone: "Pietra portafortuna tradizionale",
+    approxHeartbeats: "Battiti cardiaci stimati",
+    approxBreaths: "Respiri stimati",
+    approxSleep: "Ore di sonno stimate",
+    
+    progressTitle: "Progresso di vita e traguardi pensione",
+    progressDesc: "Visualizzazione della tua età rispetto ai requisiti standard di pensionamento UE:",
+    targetMilestoneLabel: "Traguardo età (es. pensionamento standard UE a 67 anni)",
+    yearsLived: "Anni completati",
+    yearsRemaining: "Anni rimanenti",
+    
+    startDateLabel: "Data di inizio",
+    endDateLabel: "Data di fine",
+    excludeWeekendsLabel: "Escludi i fine settimana (Solo giorni lavorativi)",
+    includeEndDateLabel: "Includi data finale nel conteggio (+1 giorno)",
+    diffResultTitle: "Intervallo calcolato",
+    workingDaysOnly: "Giorni lavorativi (Lunedì - Venerdì)",
+    totalCalendarDays: "Totale giorni solari",
+    alternateFormats: "Formati alternativi di scomposizione",
+    
+    operationLabel: "Operazione",
+    opAdd: "Aggiungi (+)",
+    opSubtract: "Sottrai (-)",
+    addDurationTitle: "Data di destinazione calcolata",
+    resultingDateLabel: "Data di destinazione risultante",
+    
+    aboutTitle: "Informazioni su Smart Age & Date Calculator Pro",
+    aboutP1: "Questo calcolatore professionale per data ed età è stato meticolosamente calibrato per rispondere agli standard di accuratezza del pubblico europeo. Monitora anni bisestili, cicli del calendario e fusi orari in modo matematico.",
+    aboutP2: "Molto apprezzato da reparti HR, professionisti e project manager, il filtro dei giorni lavorativi esclude i sabati e le domeniche per facilitare il computo dei periodi di preavviso, della durata dei contratti e delle date di consegna.",
+    aboutP3: "Il funzionamento esclusivamente client-side tramite interfacce dinamiche assicura tempi di risposta nulli, fluidità visiva e la massima riservatezza.",
+    faqTitle: "Domande frequenti (FAQ) — Standard Europeo",
+    
+    exportTitle: "Distribuisci la versione a file singolo su Netlify",
+    exportDesc: "Genera e scarica un file HTML autosufficiente al 100% contenente CSS, JavaScript e traduzioni. Caricalo direttamente su Netlify con un drag-and-drop!",
+    exportBtn: "Scarica file HTML autonomo",
+    exportSuccessToast: "File HTML indipendente compilato con successo localmente! Download avviato.",
+    quickSelectLabel: "Intervallo rapido date",
+    quickSelectLast30: "Ultimi 30 giorni",
+    quickSelectNext30: "Prossimi 30 giorni",
+    quickSelectSinceJan1: "Dal 1° gen",
+    quickSelectToday: "Oggi",
+    exportPdfBtn: "Esporta rapporto PDF",
+    pdfTitle: "SMART AGE & DATE CALCULATOR",
+    pdfSub: "Rapporto di precisione standard europeo",
+    pdfGeneratedOn: "Rapporto generato il",
+    pdfDetails: "Dettagli configurazione calcolo",
+    pdfResults: "Risultati calcolati di precisione"
+  }
+};
+
+export const FAQ_ITEMS: Record<Language, FAQItem[]> = {
+  EN: [
+    {
+      question: "How does the tool calculate exact age in leap years?",
+      answer: "Our engine uses professional calendar algorithms in JavaScript that correctly calculate the exact number of years, months, and days between the selected dates. For children born on February 29th, the system counts anniversaries according to standard European legal definitions depending on the baseline comparison date."
+    },
+    {
+      question: "How are 'Working Days' calculated?",
+      answer: "Working days (or business days) exclude Saturdays and Sundays. The system walks through the entire date range client-side, identifying and skipping weekend days, which gives you the perfect corporate working days span for contract and HR planning."
+    },
+    {
+      question: "Is any birthdate or personal information stored on servers?",
+      answer: "No. This tool is fully static and client-side compliant under the EU General Data Protection Regulation (GDPR). No data is transmitted to an external database, making it 100% safe, private, and offline-capable."
+    },
+    {
+      question: "How is the birth zodiac and birthstone determined?",
+      answer: "Western Zodiac is computed using precise calendar day ranges (e.g. Aries, Taurus, Gemini). Chinese zodiac is mapped using lunar-solar calendar years, and the birthstone correlates with traditional European/GIA month gemstone assignments."
+    }
+  ],
+  DE: [
+    {
+      question: "Wie berechnet das Tool das genaue Alter in Schaltjahren?",
+      answer: "Unsere Engine nutzt mathematisch exakte Kalender-Algorithmen in JavaScript, welche die genaue Anzahl an Jahren, Monaten und Tagen ermitteln. Schaltjahre werden lückenlos berücksichtigt, sodass auch für am 29. Februar Geborene die gesetzlichen EU-Regeln gelten."
+    },
+    {
+      question: "Wie werden die 'Arbeitstage' ermittelt?",
+      answer: "Die Arbeitstage-Berechnung schließt Samstage und Sonntage vollständig aus. Das System durchläuft die Datumskette im Browser und filtert Wochenenden heraus, was eine verlässliche Planungsbasis für HR und Verträge bietet."
+    },
+    {
+      question: "Werden meine Geburtsdaten auf einem Server gespeichert?",
+      answer: "Nein. Gemäß der europäischen Datenschutz-Grundverordnung (DSGVO) arbeitet dieses Tool vollständig clientseitig in Ihrem Browser. Es findet keine Datenübertragung an Server statt, was absolute Vertraulichkeit garantiert."
+    },
+    {
+      question: "Wie werden Sternzeichen und Geburtssteine bestimmt?",
+      answer: "Die westlichen Sternzeichen basieren auf den kalendarischen Standard-Zeiträumen (z.B. Widder, Stier). Das chinesische Tierkreiszeichen wird anhand des jeweiligen Geburtsjahres berechnet und der Geburtsstein entspricht den traditionellen GIA-Monatszuordnungen."
+    }
+  ],
+  FR: [
+    {
+      question: "Comment l'outil calcule-t-il l'âge exact lors des années bissextiles ?",
+      answer: "Notre algorithme utilise les standards calendaires JavaScript pour calculer précisément les années, mois, et jours restants. Les années bissextiles sont entièrement prises en compte, y compris pour les personnes nées un 29 février."
+    },
+    {
+      question: "Comment sont définis les 'Jours Ouvrés' ?",
+      answer: "Les jours ouvrés correspondent aux jours de la semaine hors samedi et dimanche. L'utilitaire calcule et exclut ces derniers pour offrir une vision nette de la durée de travail d'un contrat ou d'une prestation."
+    },
+    {
+      question: "Mes données personnelles ou de naissance sont-elles conservées ?",
+      answer: "Non. Conformément au Règlement Général sur la Protection des Données (RGPD), toutes les informations restent confinées dans votre navigateur. Aucune requête réseau ne transmet vos données à un serveur tiers."
+    },
+    {
+      question: "Comment le signe astrologique et la pierre de naissance sont-ils calculés ?",
+      answer: "Le signe du zodiaque occidental est défini selon l'intervalle calendaire classique. Le zodiaque chinois repose sur l'année de naissance, et la pierre de naissance suit les conventions de l'Association Joaillière Internationale."
+    }
+  ],
+  ES: [
+    {
+      question: "¿Cómo calcula la herramienta la edad exacta en años bisiestos?",
+      answer: "El motor aplica las reglas del calendario gregoriano en JavaScript. Los años bisiestos con 366 días se calculan correctamente de forma proporcional, resolviendo los aniversarios de los nacidos el 29 de febrero con precisión."
+    },
+    {
+      question: "¿Cómo se calculan los 'Días Laborables'?",
+      answer: "Los días laborables excluyen sábados y domingos. La herramienta analiza el rango temporal seleccionado y descuenta automáticamente los fines de semana, lo cual es ideal para la planificación laboral de la UE."
+    },
+    {
+      question: "¿Se guarda algún dato de nacimiento en un servidor externo?",
+      answer: "Absolutamente no. De acuerdo con el Reglamento General de Protección de Datos (RGPD) de la Unión Europea, el procesamiento de datos es 100% local. Su privacidad está totalmente garantizada."
+    },
+    {
+      question: "¿Cómo se asignan el signo del zodiaco y la piedra de nacimiento?",
+      answer: "El zodiaco occidental se asigna según los rangos del calendario solar tradicional. El zodiaco chino se calcula por el año de nacimiento y la piedra de nacimiento se alinea con la clasificación tradicional de gemas mensuales."
+    }
+  ],
+  IT: [
+    {
+      question: "Come viene calcolata l'età esatta negli anni bisestili?",
+      answer: "Il nostro calcolatore utilizza formule del calendario gregoriano in JavaScript. Gli anni bisestili vengono conteggiati correttamente con i loro 366 giorni, gestendo con precisione anche i nati il 29 febbraio."
+    },
+    {
+      question: "Come vengono computati i 'Giorni Lavorativi'?",
+      answer: "Vengono esclusi i sabati e le domeniche. Il calcolatore analizza localmente l'intervallo temporale inserito ed elimina i giorni del fine settimana, offrendo un calcolo ideale per scadenze aziendali ed HR."
+    },
+    {
+      question: "I miei dati personali di nascita vengono memorizzati online?",
+      answer: "No. Questo applicativo rispetta la direttiva europea sul trattamento dei dati personali (GDPR). Nessuna informazione lascia mai il vostro dispositivo, garantendo la massima sicurezza."
+    },
+    {
+      question: "Come vengono determinati i segni zodiacali e la pietra portafortuna?",
+      answer: "Lo zodiaco occidentale è mappato in base ai periodi solari convenzionali. Lo zodiaco cinese si basa sull'anno lunare di nascita e la pietra è associata al mese secondo la classificazione standard dei gioiellieri GIA."
+    }
+  ]
+};

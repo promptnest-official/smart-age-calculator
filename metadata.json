@@ -1,0 +1,6 @@
+{
+  "name": "Smart Age & Date Calculator Pro",
+  "description": "High-performance, GDPR-compliant date & age calculator optimized for the European market. Features precise birthday tracking, duration arithmetic, and working days calculations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
