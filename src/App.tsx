@@ -18,7 +18,9 @@ import {
   FileDown,
   History,
   Trash2,
-  Save
+  Save,
+  Share2,
+  Copy
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { jsPDF } from 'jspdf';
@@ -96,6 +98,116 @@ export default function App() {
       setGdprDismissed(true);
     }
   }, []);
+
+  // --- Sharing States ---
+  const [shareModalOpen, setShareModalOpen] = useState<boolean>(false);
+  const [shareType, setShareType] = useState<'age' | 'diff' | 'duration'>('age');
+
+  // Load shared query parameters on mount
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const urlTab = params.get('tab');
+      const urlLang = params.get('lang');
+      
+      if (urlLang && ['EN', 'DE', 'FR', 'ES', 'IT'].includes(urlLang.toUpperCase())) {
+        setLang(urlLang.toUpperCase() as Language);
+      }
+
+      if (urlTab === 'age') {
+        setActiveTab('age');
+        const bDate = params.get('birthDate');
+        const bTime = params.get('birthTime');
+        const cDate = params.get('calcDate');
+        const milestone = params.get('milestone');
+        
+        if (bDate) setBirthDate(bDate);
+        if (bTime) setBirthTime(bTime);
+        if (cDate) setCalcDate(cDate);
+        if (milestone) setTargetMilestone(parseInt(milestone) || 67);
+      } else if (urlTab === 'diff') {
+        setActiveTab('diff');
+        const sDate = params.get('startDate');
+        const eDate = params.get('endDate');
+        const exclWe = params.get('excludeWeekends');
+        const inclEnd = params.get('includeEndDate');
+        
+        if (sDate) setStartDate(sDate);
+        if (eDate) setEndDate(eDate);
+        if (exclWe) setExcludeWeekends(exclWe === 'true');
+        if (inclEnd) setIncludeEndDate(inclEnd === 'true');
+      } else if (urlTab === 'duration') {
+        setActiveTab('duration');
+        const sDate = params.get('durStartDate');
+        const op = params.get('durOperation');
+        const years = params.get('durYears');
+        const months = params.get('durMonths');
+        const weeks = params.get('durWeeks');
+        const days = params.get('durDays');
+        const skipWe = params.get('durSkipWeekends');
+        
+        if (sDate) setDurStartDate(sDate);
+        if (op === 'add' || op === 'subtract') setDurOperation(op);
+        if (years) setDurYears(parseInt(years) || 0);
+        if (months) setDurMonths(parseInt(months) || 0);
+        if (weeks) setDurWeeks(parseInt(weeks) || 0);
+        if (days) setDurDays(parseInt(days) || 0);
+        if (skipWe) setDurSkipWeekends(skipWe === 'true');
+      }
+    } catch (e) {
+      console.error('Error loading shared link params:', e);
+    }
+  }, [lang]);
+
+  // Helper to generate pre-filled localized share messages and links
+  const generateShareData = (type: 'age' | 'diff' | 'duration') => {
+    const baseUrl = window.location.origin + window.location.pathname;
+    const params = new URLSearchParams();
+    params.set('tab', type);
+    params.set('lang', lang);
+    
+    let resultString = '';
+    
+    if (type === 'age') {
+      params.set('birthDate', birthDate);
+      params.set('birthTime', birthTime);
+      params.set('calcDate', calcDate);
+      params.set('milestone', String(targetMilestone));
+      resultString = `${ageResults.years} ${dict.years.toLowerCase()}, ${ageResults.months} ${dict.months.toLowerCase()}, ${ageResults.days} ${dict.days.toLowerCase()}`;
+    } else if (type === 'diff') {
+      params.set('startDate', startDate);
+      params.set('endDate', endDate);
+      params.set('excludeWeekends', String(excludeWeekends));
+      params.set('includeEndDate', String(includeEndDate));
+      resultString = `${diffResults.totalDays} ${dict.totalCalendarDays.toLowerCase()} (${diffResults.workingDays} ${dict.workingDaysOnly.split('(')[0].trim().toLowerCase()})`;
+    } else {
+      params.set('durStartDate', durStartDate);
+      params.set('durOperation', durOperation);
+      params.set('durYears', String(durYears));
+      params.set('durMonths', String(durMonths));
+      params.set('durWeeks', String(durWeeks));
+      params.set('durDays', String(durDays));
+      params.set('durSkipWeekends', String(durSkipWeekends));
+      resultString = `${durationResult.formatted || ''} (${durationResult.dayOfWeek || ''})`;
+    }
+    
+    const fullUrl = `${baseUrl}?${params.toString()}`;
+    
+    let template = '';
+    if (type === 'age') {
+      template = dict.shareTemplateAge.replace('{result}', resultString);
+    } else if (type === 'diff') {
+      template = dict.shareTemplateDiff.replace('{result}', resultString);
+    } else {
+      template = dict.shareTemplateDuration.replace('{result}', resultString);
+    }
+    
+    return {
+      url: fullUrl,
+      text: template,
+      resultString
+    };
+  };
 
   // Real-time ticker effect
   useEffect(() => {
@@ -627,6 +739,17 @@ export default function App() {
                       <div className="flex items-center gap-1.5">
                         <button
                           type="button"
+                          onClick={() => {
+                            setShareType('age');
+                            setShareModalOpen(true);
+                          }}
+                          className="py-1 px-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-[9px] font-bold uppercase tracking-wider rounded transition flex items-center gap-1 cursor-pointer border border-indigo-100"
+                        >
+                          <Share2 className="w-3 h-3 text-indigo-600" />
+                          {dict.shareBtn}
+                        </button>
+                        <button
+                          type="button"
                           onClick={() => saveCalculationToHistory('age')}
                           className="py-1 px-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[9px] font-bold uppercase tracking-wider rounded transition flex items-center gap-1 cursor-pointer border border-slate-200"
                         >
@@ -918,6 +1041,17 @@ export default function App() {
                       <div className="flex items-center gap-1.5">
                         <button
                           type="button"
+                          onClick={() => {
+                            setShareType('diff');
+                            setShareModalOpen(true);
+                          }}
+                          className="py-1 px-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-[9px] font-bold uppercase tracking-wider rounded transition flex items-center gap-1 cursor-pointer border border-indigo-100"
+                        >
+                          <Share2 className="w-3 h-3 text-indigo-600" />
+                          {dict.shareBtn}
+                        </button>
+                        <button
+                          type="button"
                           onClick={() => saveCalculationToHistory('diff')}
                           className="py-1 px-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[9px] font-bold uppercase tracking-wider rounded transition flex items-center gap-1 cursor-pointer border border-slate-200"
                         >
@@ -1118,6 +1252,17 @@ export default function App() {
                         {dict.resultingDateLabel}
                       </h4>
                       <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShareType('duration');
+                            setShareModalOpen(true);
+                          }}
+                          className="py-1 px-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-[9px] font-bold uppercase tracking-wider rounded transition flex items-center gap-1 cursor-pointer border border-indigo-100"
+                        >
+                          <Share2 className="w-3 h-3 text-indigo-600" />
+                          {dict.shareBtn}
+                        </button>
                         <button
                           type="button"
                           onClick={() => saveCalculationToHistory('duration')}
@@ -1449,6 +1594,142 @@ export default function App() {
             </motion.div>
           </div>
         )}
+      </AnimatePresence>
+
+      {/* Localized Share Modal */}
+      <AnimatePresence>
+        {shareModalOpen && (() => {
+          const shareData = generateShareData(shareType);
+          return (
+            <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShareModalOpen(false)}
+                className="absolute inset-0 bg-slate-950/50 backdrop-blur-xs cursor-pointer"
+              />
+
+              {/* Modal Container */}
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0, y: 15 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.95, opacity: 0, y: 15 }}
+                transition={{ type: "spring", damping: 25, stiffness: 350 }}
+                className="relative w-full max-w-md bg-white rounded-xl border border-slate-200 shadow-2xl overflow-hidden z-10 flex flex-col"
+              >
+                {/* Header */}
+                <div className="px-5 py-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <Share2 className="w-4 h-4 text-indigo-600 animate-pulse" />
+                    <h2 className="text-xs font-bold text-slate-950 uppercase tracking-wider">
+                      {dict.shareModalTitle}
+                    </h2>
+                  </div>
+                  <button
+                    onClick={() => setShareModalOpen(false)}
+                    className="text-slate-400 hover:text-indigo-600 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded hover:bg-slate-100 transition cursor-pointer"
+                  >
+                    {dict.close}
+                  </button>
+                </div>
+
+                {/* Body */}
+                <div className="p-5 space-y-4">
+                  <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wide leading-relaxed">
+                    {dict.shareModalDesc}
+                  </p>
+
+                  {/* Message Preview */}
+                  <div className="space-y-1">
+                    <span className="text-[8px] font-extrabold text-slate-400 uppercase tracking-widest block">
+                      Message Preview
+                    </span>
+                    <div className="bg-slate-50 rounded-lg p-3.5 border border-slate-150 relative">
+                      <p className="text-[10px] font-semibold text-slate-700 leading-normal">
+                        {shareData.text}
+                      </p>
+                      <span className="text-[9px] font-mono text-indigo-500 font-bold break-all mt-1.5 block hover:underline">
+                        {shareData.url}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Input link field */}
+                  <div className="space-y-1">
+                    <span className="text-[8px] font-extrabold text-slate-400 uppercase tracking-widest block">
+                      Shareable URL
+                    </span>
+                    <div className="flex gap-1.5">
+                      <input
+                        type="text"
+                        readOnly
+                        value={shareData.url}
+                        className="flex-1 bg-slate-50 border border-slate-200 text-slate-600 text-[10px] rounded p-2 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono select-all"
+                        onClick={(e) => (e.target as HTMLInputElement).select()}
+                      />
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(shareData.url);
+                          setToastMessage(dict.shareCopiedToast);
+                          setTimeout(() => setToastMessage(null), 3000);
+                        }}
+                        className="px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[9px] font-bold uppercase tracking-wider rounded transition flex items-center gap-1 cursor-pointer border border-slate-200 shrink-0"
+                      >
+                        <Copy className="w-3.5 h-3.5 text-slate-500" />
+                        {dict.shareCopyLink}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Share buttons grid */}
+                  <div className="grid grid-cols-1 gap-2 pt-2">
+                    {/* Twitter */}
+                    <a
+                      href={`https://x.com/intent/tweet?text=${encodeURIComponent(shareData.text)}&url=${encodeURIComponent(shareData.url)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-950 hover:bg-slate-900 text-white rounded text-[10px] font-bold uppercase tracking-wider transition shadow-sm cursor-pointer"
+                    >
+                      <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                      </svg>
+                      {dict.shareTwitter}
+                    </a>
+
+                    {/* WhatsApp */}
+                    <a
+                      href={`https://api.whatsapp.com/send?text=${encodeURIComponent(shareData.text + ' ' + shareData.url)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#25D366] hover:bg-[#20ba59] text-white rounded text-[10px] font-bold uppercase tracking-wider transition shadow-sm cursor-pointer"
+                    >
+                      <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.513 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.717-1.456L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.799.002-2.63-1.023-5.101-2.885-6.965C16.528 3.977 14.07 2.95 11.478 2.95c-5.44 0-9.866 4.372-9.87 9.802 0 1.714.47 3.388 1.358 4.878l-.993 3.624 3.73-.974h.01c1.554.832 3.193 1.272 4.834 1.272zm11.107-7.53c-.307-.152-1.815-.885-2.096-.985-.281-.1-.485-.152-.689.152-.204.304-.79.985-.97 1.18-.18.196-.359.219-.665.067-.307-.152-1.295-.472-2.467-1.504-.913-.805-1.53-1.8-1.71-2.103-.18-.304-.018-.468.134-.62.137-.136.306-.354.459-.53.153-.177.204-.304.306-.508.102-.203.05-.382-.025-.534-.076-.152-.688-1.634-.943-2.232-.249-.593-.502-.511-.689-.52l-.587-.01c-.204 0-.536.076-.816.38-.28.304-1.071 1.033-1.071 2.518s1.097 2.915 1.25 3.118c.153.203 2.158 3.255 5.228 4.551.73.308 1.3.493 1.745.632.733.23 1.401.197 1.928.12.588-.086 1.815-.734 2.071-1.406.255-.672.255-1.246.179-1.366-.076-.12-.281-.196-.588-.348z"/>
+                      </svg>
+                      {dict.shareWhatsApp}
+                    </a>
+
+                    {/* LinkedIn */}
+                    <a
+                      href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareData.url)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#0A66C2] hover:bg-[#0855a1] text-white rounded text-[10px] font-bold uppercase tracking-wider transition shadow-sm cursor-pointer"
+                    >
+                      <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                      </svg>
+                      {dict.shareLinkedIn}
+                    </a>
+                  </div>
+
+                </div>
+              </motion.div>
+            </div>
+          );
+        })()}
       </AnimatePresence>
 
       {/* Floating compiled toast message */}

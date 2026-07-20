@@ -108,6 +108,17 @@ export interface TranslationDictionary {
   historySavedToast: string;
   historyLoadedToast: string;
   historyClearedToast: string;
+  shareBtn: string;
+  shareModalTitle: string;
+  shareModalDesc: string;
+  shareTwitter: string;
+  shareWhatsApp: string;
+  shareLinkedIn: string;
+  shareCopyLink: string;
+  shareCopiedToast: string;
+  shareTemplateAge: string;
+  shareTemplateDiff: string;
+  shareTemplateDuration: string;
 }
 
 export interface FAQItem {
