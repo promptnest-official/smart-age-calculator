@@ -85,7 +85,17 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     pdfSub: "Accurate European Standard Precision Report",
     pdfGeneratedOn: "Report generated on",
     pdfDetails: "Calculation Configuration Details",
-    pdfResults: "Calculated Precision Results"
+    pdfResults: "Calculated Precision Results",
+    historyTitle: "Calculation History",
+    historySaveBtn: "Save to History",
+    historyClearBtn: "Clear History",
+    historyEmpty: "No saved calculations in your history yet.",
+    historyClose: "Close Drawer",
+    historyLoad: "Load Inputs",
+    historyDelete: "Delete Item",
+    historySavedToast: "Calculation saved to browser history!",
+    historyLoadedToast: "Calculation restored successfully!",
+    historyClearedToast: "Calculation history cleared!"
   },
   DE: {
     title: "Smart Age & Date Calculator Pro",
@@ -171,7 +181,17 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     pdfSub: "Präzisionsbericht nach europäischem Standard",
     pdfGeneratedOn: "Bericht erstellt am",
     pdfDetails: "Berechnungs-Konfigurationsdetails",
-    pdfResults: "Berechnete Präzisionsergebnisse"
+    pdfResults: "Berechnete Präzisionsergebnisse",
+    historyTitle: "Berechnungsverlauf",
+    historySaveBtn: "Im Verlauf speichern",
+    historyClearBtn: "Verlauf leeren",
+    historyEmpty: "Noch keine Berechnungen im Verlauf gespeichert.",
+    historyClose: "Verlauf schließen",
+    historyLoad: "Laden",
+    historyDelete: "Löschen",
+    historySavedToast: "Berechnung im Browserverlauf gespeichert!",
+    historyLoadedToast: "Berechnung erfolgreich wiederhergestellt!",
+    historyClearedToast: "Berechnungsverlauf erfolgreich geleert!"
   },
   FR: {
     title: "Smart Age & Date Calculator Pro",
@@ -257,7 +277,17 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     pdfSub: "Rapport de précision conforme aux normes européennes",
     pdfGeneratedOn: "Rapport généré le",
     pdfDetails: "Détails de configuration du calcul",
-    pdfResults: "Résultats de précision calculés"
+    pdfResults: "Résultats de précision calculés",
+    historyTitle: "Historique des calculs",
+    historySaveBtn: "Enregistrer",
+    historyClearBtn: "Effacer l'historique",
+    historyEmpty: "Aucun calcul enregistré pour le moment.",
+    historyClose: "Fermer l'historique",
+    historyLoad: "Charger",
+    historyDelete: "Supprimer",
+    historySavedToast: "Calcul enregistré dans l'historique de votre navigateur !",
+    historyLoadedToast: "Calcul restauré avec succès !",
+    historyClearedToast: "Historique des calculs vidé !"
   },
   ES: {
     title: "Smart Age & Date Calculator Pro",
@@ -343,7 +373,17 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     pdfSub: "Informe de precisión conforme al estándar europeo",
     pdfGeneratedOn: "Informe generado el",
     pdfDetails: "Detalles de configuración del cálculo",
-    pdfResults: "Resultados de precisión calculados"
+    pdfResults: "Resultados de precisión calculados",
+    historyTitle: "Historial de cálculos",
+    historySaveBtn: "Guardar en historial",
+    historyClearBtn: "Vaciar historial",
+    historyEmpty: "Aún no hay cálculos guardados en su historial.",
+    historyClose: "Cerrar historial",
+    historyLoad: "Cargar",
+    historyDelete: "Eliminar",
+    historySavedToast: "¡Cálculo guardado en el historial de su navegador!",
+    historyLoadedToast: "¡Cálculo restaurado con éxito!",
+    historyClearedToast: "¡Historial de cálculos vaciado!"
   },
   IT: {
     title: "Smart Age & Date Calculator Pro",
@@ -429,7 +469,17 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     pdfSub: "Rapporto di precisione standard europeo",
     pdfGeneratedOn: "Rapporto generato il",
     pdfDetails: "Dettagli configurazione calcolo",
-    pdfResults: "Risultati calcolati di precisione"
+    pdfResults: "Risultati calcolati di precisione",
+    historyTitle: "Cronologia calcoli",
+    historySaveBtn: "Salva in cronologia",
+    historyClearBtn: "Svuota cronologia",
+    historyEmpty: "Nessun calcolo salvato in cronologia.",
+    historyClose: "Chiudi cronologia",
+    historyLoad: "Carica",
+    historyDelete: "Elimina",
+    historySavedToast: "Calcolo salvato nella cronologia del browser!",
+    historyLoadedToast: "Calcolo ripristinato con successo!",
+    historyClearedToast: "Cronologia dei calcoli svuotata!"
   }
 };
 

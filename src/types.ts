@@ -98,9 +98,28 @@ export interface TranslationDictionary {
   pdfGeneratedOn: string;
   pdfDetails: string;
   pdfResults: string;
+  historyTitle: string;
+  historySaveBtn: string;
+  historyClearBtn: string;
+  historyEmpty: string;
+  historyClose: string;
+  historyLoad: string;
+  historyDelete: string;
+  historySavedToast: string;
+  historyLoadedToast: string;
+  historyClearedToast: string;
 }
 
 export interface FAQItem {
   question: string;
   answer: string;
+}
+
+export interface HistoryItem {
+  id: string;
+  type: 'age' | 'diff' | 'duration';
+  timestamp: string;
+  summary: string;
+  inputs: Record<string, string>;
+  results: Record<string, string>;
 }

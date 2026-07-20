@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Calendar, 
   Clock, 
@@ -15,11 +15,14 @@ import {
   CalendarCheck2,
   BookmarkCheck,
   Scale,
-  FileDown
+  FileDown,
+  History,
+  Trash2,
+  Save
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { jsPDF } from 'jspdf';
-import { Language } from './types';
+import { Language, HistoryItem } from './types';
 import { TRANSLATIONS, FAQ_ITEMS } from './translations';
 import { 
   calculateExactAge, 
@@ -70,6 +73,21 @@ export default function App() {
 
   // FAQ Expand state
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
+
+  // --- Calculation History States ---
+  const [history, setHistory] = useState<HistoryItem[]>(() => {
+    try {
+      const saved = localStorage.getItem('smart_calc_history');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    localStorage.setItem('smart_calc_history', JSON.stringify(history));
+  }, [history]);
 
   // Check if GDPR cookie consent was previously dismissed
   useEffect(() => {
@@ -315,6 +333,105 @@ export default function App() {
   const ageDecimal = ageResults.years + (ageResults.months / 12) + (ageResults.days / 365);
   const progressPercent = Math.min(100, Math.max(0, (ageDecimal / targetMilestone) * 100));
 
+  // --- Calculation History Helpers ---
+  const saveCalculationToHistory = (type: 'age' | 'diff' | 'duration') => {
+    let inputs: Record<string, string> = {};
+    let results: Record<string, string> = {};
+    let summary = '';
+
+    if (type === 'age') {
+      if (!birthDate) return;
+      inputs = { birthDate, birthTime, calcDate, targetMilestone: String(targetMilestone) };
+      results = {
+        years: String(ageResults.years),
+        months: String(ageResults.months),
+        days: String(ageResults.days),
+        weeks: String(ageResults.weeks),
+      };
+      summary = `${birthDate} ➔ ${calcDate}`;
+    } else if (type === 'diff') {
+      if (!startDate || !endDate) return;
+      inputs = { startDate, endDate, excludeWeekends: String(excludeWeekends), includeEndDate: String(includeEndDate) };
+      results = {
+        totalDays: String(diffResults.totalDays),
+        workingDays: String(diffResults.workingDays),
+      };
+      summary = `${startDate} ➔ ${endDate}`;
+    } else {
+      if (!durStartDate) return;
+      inputs = {
+        durStartDate,
+        durOperation,
+        durYears: String(durYears),
+        durMonths: String(durMonths),
+        durWeeks: String(durWeeks),
+        durDays: String(durDays),
+        durSkipWeekends: String(durSkipWeekends),
+      };
+      results = {
+        resultDate: durationResult.formatted || '',
+        dayOfWeek: durationResult.dayOfWeek || '',
+      };
+      const opSign = durOperation === 'add' ? '+' : '−';
+      summary = `${durStartDate} ${opSign} ${durYears}y ${durMonths}m ${durWeeks}w ${durDays}d`;
+    }
+
+    const newItem: HistoryItem = {
+      id: String(Date.now()),
+      type,
+      timestamp: new Date().toLocaleTimeString(lang === 'DE' ? 'de-DE' : lang === 'FR' ? 'fr-FR' : lang === 'ES' ? 'es-ES' : lang === 'IT' ? 'it-IT' : 'en-US', { hour: '2-digit', minute: '2-digit' }),
+      inputs,
+      results,
+      summary,
+    };
+
+    setHistory(prev => {
+      // Avoid exact duplicates in history
+      const filtered = prev.filter(item => 
+        !(item.type === type && JSON.stringify(item.inputs) === JSON.stringify(inputs))
+      );
+      const updated = [newItem, ...filtered];
+      return updated.slice(0, 5);
+    });
+
+    showToast(dict.historySavedToast);
+  };
+
+  const loadHistoryItem = (item: HistoryItem) => {
+    setActiveTab(item.type);
+    if (item.type === 'age') {
+      if (item.inputs.birthDate) setBirthDate(item.inputs.birthDate);
+      if (item.inputs.birthTime) setBirthTime(item.inputs.birthTime);
+      if (item.inputs.calcDate) setCalcDate(item.inputs.calcDate);
+      if (item.inputs.targetMilestone) setTargetMilestone(parseInt(item.inputs.targetMilestone) || 67);
+    } else if (item.type === 'diff') {
+      if (item.inputs.startDate) setStartDate(item.inputs.startDate);
+      if (item.inputs.endDate) setEndDate(item.inputs.endDate);
+      setExcludeWeekends(item.inputs.excludeWeekends === 'true');
+      setIncludeEndDate(item.inputs.includeEndDate === 'true');
+    } else if (item.type === 'duration') {
+      if (item.inputs.durStartDate) setDurStartDate(item.inputs.durStartDate);
+      if (item.inputs.durOperation) setDurOperation(item.inputs.durOperation as 'add' | 'subtract');
+      if (item.inputs.durYears) setDurYears(parseInt(item.inputs.durYears) || 0);
+      if (item.inputs.durMonths) setDurMonths(parseInt(item.inputs.durMonths) || 0);
+      if (item.inputs.durWeeks) setDurWeeks(parseInt(item.inputs.durWeeks) || 0);
+      if (item.inputs.durDays) setDurDays(parseInt(item.inputs.durDays) || 0);
+      setDurSkipWeekends(item.inputs.durSkipWeekends === 'true');
+    }
+    setDrawerOpen(false);
+    showToast(dict.historyLoadedToast);
+  };
+
+  const deleteHistoryItem = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setHistory(prev => prev.filter(item => item.id !== id));
+  };
+
+  const clearHistory = () => {
+    setHistory([]);
+    showToast(dict.historyClearedToast);
+  };
+
   return (
     <div className="min-h-screen flex flex-col justify-between bg-slate-50 text-slate-800 font-sans">
       
@@ -336,6 +453,19 @@ export default function App() {
           
           {/* Europe Language Toggle & Navigation Integration */}
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => setDrawerOpen(true)}
+              className="relative flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded text-slate-700 text-[10px] font-bold uppercase tracking-wider hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition cursor-pointer"
+            >
+              <History className="w-3.5 h-3.5 text-slate-500" />
+              <span>{dict.historyTitle}</span>
+              {history.length > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-indigo-600 text-[8px] font-bold text-white shadow-xs">
+                  {history.length}
+                </span>
+              )}
+            </button>
+
             <div className="flex items-center gap-1 text-slate-400 bg-slate-50 border border-slate-200 rounded p-1">
               <Globe className="w-3.5 h-3.5 text-slate-500" />
               <select 
@@ -494,14 +624,24 @@ export default function App() {
                         <span className="w-1 h-3 bg-indigo-600 rounded-full"></span>
                         {dict.exactAgeTitle}
                       </h4>
-                      <button
-                        type="button"
-                        onClick={handleExportPDF}
-                        className="py-1 px-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[9px] font-bold uppercase tracking-wider rounded transition flex items-center gap-1 cursor-pointer shadow-xs"
-                      >
-                        <FileDown className="w-3 h-3" />
-                        {dict.exportPdfBtn}
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => saveCalculationToHistory('age')}
+                          className="py-1 px-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[9px] font-bold uppercase tracking-wider rounded transition flex items-center gap-1 cursor-pointer border border-slate-200"
+                        >
+                          <Save className="w-3 h-3 text-slate-500" />
+                          {dict.historySaveBtn}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleExportPDF}
+                          className="py-1 px-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[9px] font-bold uppercase tracking-wider rounded transition flex items-center gap-1 cursor-pointer shadow-xs"
+                        >
+                          <FileDown className="w-3 h-3" />
+                          {dict.exportPdfBtn}
+                        </button>
+                      </div>
                     </div>
                     
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -775,14 +915,24 @@ export default function App() {
                         <span className="w-1 h-3 bg-indigo-600 rounded-full"></span>
                         {dict.diffResultTitle}
                       </h4>
-                      <button
-                        type="button"
-                        onClick={handleExportPDF}
-                        className="py-1 px-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[9px] font-bold uppercase tracking-wider rounded transition flex items-center gap-1 cursor-pointer shadow-xs"
-                      >
-                        <FileDown className="w-3 h-3" />
-                        {dict.exportPdfBtn}
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => saveCalculationToHistory('diff')}
+                          className="py-1 px-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[9px] font-bold uppercase tracking-wider rounded transition flex items-center gap-1 cursor-pointer border border-slate-200"
+                        >
+                          <Save className="w-3 h-3 text-slate-500" />
+                          {dict.historySaveBtn}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleExportPDF}
+                          className="py-1 px-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[9px] font-bold uppercase tracking-wider rounded transition flex items-center gap-1 cursor-pointer shadow-xs"
+                        >
+                          <FileDown className="w-3 h-3" />
+                          {dict.exportPdfBtn}
+                        </button>
+                      </div>
                     </div>
                     
                     <div className="flex flex-col sm:flex-row justify-between items-stretch gap-3 bg-white p-4 rounded-lg border border-slate-200 shadow-xs">
@@ -967,14 +1117,24 @@ export default function App() {
                         <span className="w-1 h-3 bg-indigo-600 rounded-full"></span>
                         {dict.resultingDateLabel}
                       </h4>
-                      <button
-                        type="button"
-                        onClick={handleExportPDF}
-                        className="py-1 px-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[9px] font-bold uppercase tracking-wider rounded transition flex items-center gap-1 cursor-pointer shadow-xs"
-                      >
-                        <FileDown className="w-3 h-3" />
-                        {dict.exportPdfBtn}
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => saveCalculationToHistory('duration')}
+                          className="py-1 px-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[9px] font-bold uppercase tracking-wider rounded transition flex items-center gap-1 cursor-pointer border border-slate-200"
+                        >
+                          <Save className="w-3 h-3 text-slate-500" />
+                          {dict.historySaveBtn}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleExportPDF}
+                          className="py-1 px-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[9px] font-bold uppercase tracking-wider rounded transition flex items-center gap-1 cursor-pointer shadow-xs"
+                        >
+                          <FileDown className="w-3 h-3" />
+                          {dict.exportPdfBtn}
+                        </button>
+                      </div>
                     </div>
                     
                     <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm inline-block min-w-[240px] max-w-full">
@@ -1161,6 +1321,133 @@ export default function App() {
               </div>
             </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Calculation History Drawer */}
+      <AnimatePresence>
+        {drawerOpen && (
+          <div className="fixed inset-0 z-50 overflow-hidden flex justify-end">
+            {/* Backdrop overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setDrawerOpen(false)}
+              className="absolute inset-0 bg-slate-950/40 backdrop-blur-xs cursor-pointer"
+            />
+
+            {/* Slide-out Panel container */}
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 26, stiffness: 220 }}
+              className="relative w-full max-w-md bg-white border-l border-slate-200 shadow-2xl flex flex-col h-full z-10"
+            >
+              {/* Header */}
+              <div className="px-5 py-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <History className="w-4 h-4 text-indigo-600 animate-pulse" />
+                  <h2 className="text-xs font-bold text-slate-950 uppercase tracking-wider">
+                    {dict.historyTitle} ({history.length})
+                  </h2>
+                </div>
+                <button
+                  onClick={() => setDrawerOpen(false)}
+                  className="text-slate-400 hover:text-indigo-600 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded hover:bg-slate-100 transition cursor-pointer"
+                >
+                  {dict.historyClose}
+                </button>
+              </div>
+
+              {/* Scrollable list of history items */}
+              <div className="flex-grow p-5 overflow-y-auto space-y-4">
+                {history.length === 0 ? (
+                  <div className="text-center py-16 text-slate-400 space-y-3">
+                    <History className="w-10 h-10 mx-auto stroke-1" />
+                    <p className="text-[10px] font-bold uppercase tracking-widest">{dict.historyEmpty}</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {history.map((item) => (
+                      <div
+                        key={item.id}
+                        onClick={() => loadHistoryItem(item)}
+                        className="group relative bg-slate-50 p-4 rounded-lg border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/20 transition cursor-pointer flex flex-col gap-2.5"
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="flex items-center gap-1.5">
+                            <span className={`text-[8px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded border ${
+                              item.type === 'age' 
+                                ? 'bg-indigo-50 border-indigo-200 text-indigo-700' 
+                                : item.type === 'diff' 
+                                  ? 'bg-emerald-50 border-emerald-200 text-emerald-700' 
+                                  : 'bg-purple-50 border-purple-200 text-purple-700'
+                            }`}>
+                              {item.type === 'age' ? dict.tabAge : item.type === 'diff' ? dict.tabDiff : dict.tabDuration}
+                            </span>
+                            <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">
+                              {item.timestamp}
+                            </span>
+                          </div>
+                          
+                          <button
+                            onClick={(e) => deleteHistoryItem(item.id, e)}
+                            className="p-1 rounded text-slate-400 hover:text-red-500 hover:bg-red-50 transition cursor-pointer"
+                            title={dict.historyDelete}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider leading-none">
+                            {item.summary}
+                          </p>
+                          <div className="flex flex-wrap items-center gap-x-2 text-[9px] text-slate-500 uppercase font-semibold">
+                            {item.type === 'age' && (
+                              <span>
+                                {dict.years}: <strong className="text-indigo-600 font-mono">{item.results.years}</strong> | {dict.months}: <strong className="text-indigo-600 font-mono">{item.results.months}</strong> | {dict.days}: <strong className="text-indigo-600 font-mono">{item.results.days}</strong>
+                              </span>
+                            )}
+                            {item.type === 'diff' && (
+                              <span>
+                                {dict.totalCalendarDays}: <strong className="text-emerald-600 font-mono">{item.results.totalDays}</strong> | {dict.workingDaysOnly.split('(')[0]}: <strong className="text-emerald-600 font-mono">{item.results.workingDays}</strong>
+                              </span>
+                            )}
+                            {item.type === 'duration' && (
+                              <span>
+                                {dict.resultingDateLabel}: <strong className="text-purple-600 font-mono">{item.results.resultDate}</strong> ({item.results.dayOfWeek})
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="absolute right-4 bottom-4 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-[8px] font-extrabold text-indigo-600 uppercase tracking-widest">
+                          <span>{dict.historyLoad}</span>
+                          <span>➔</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Clear History Footer button */}
+              {history.length > 0 && (
+                <div className="p-4 bg-slate-50 border-t border-slate-200">
+                  <button
+                    onClick={clearHistory}
+                    className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 hover:border-red-300 rounded text-[10px] font-bold uppercase tracking-wider transition cursor-pointer animate-none"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    {dict.historyClearBtn}
+                  </button>
+                </div>
+              )}
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
