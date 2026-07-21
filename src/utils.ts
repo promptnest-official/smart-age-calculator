@@ -252,6 +252,8 @@ export interface DateDiffResult {
   hours: number;
   minutes: number;
   seconds: number;
+  totalMonthsApart: number;
+  monthsAndDaysDays: number;
 }
 
 export function calculateDateDifference(
@@ -261,7 +263,19 @@ export function calculateDateDifference(
   includeEndDate: boolean
 ): DateDiffResult {
   if (!startDateStr || !endDateStr) {
-    return { totalDays: 0, workingDays: 0, years: 0, months: 0, days: 0, weeks: 0, hours: 0, minutes: 0, seconds: 0 };
+    return { 
+      totalDays: 0, 
+      workingDays: 0, 
+      years: 0, 
+      months: 0, 
+      days: 0, 
+      weeks: 0, 
+      hours: 0, 
+      minutes: 0, 
+      seconds: 0,
+      totalMonthsApart: 0,
+      monthsAndDaysDays: 0
+    };
   }
 
   let start = new Date(startDateStr);
@@ -309,6 +323,29 @@ export function calculateDateDifference(
     years--;
   }
 
+  // --- Months & Days Apart calculation (specifically accounting for variable month lengths) ---
+  const addMonths = (date: Date, m: number): Date => {
+    const result = new Date(date);
+    const originalDay = date.getDate();
+    result.setMonth(result.getMonth() + m);
+    if (result.getDate() !== originalDay) {
+      result.setDate(0);
+    }
+    return result;
+  };
+
+  let totalMonthsApart = (workingEnd.getFullYear() - start.getFullYear()) * 12 + (workingEnd.getMonth() - start.getMonth());
+  while (totalMonthsApart > 0 && addMonths(start, totalMonthsApart).getTime() > workingEnd.getTime()) {
+    totalMonthsApart--;
+  }
+  while (addMonths(start, totalMonthsApart + 1).getTime() <= workingEnd.getTime()) {
+    totalMonthsApart++;
+  }
+
+  const targetDateForDays = addMonths(start, totalMonthsApart);
+  const diffMsForDays = workingEnd.getTime() - targetDateForDays.getTime();
+  const monthsAndDaysDays = Math.max(0, Math.floor(diffMsForDays / (1000 * 3600 * 24)));
+
   return {
     totalDays,
     workingDays: excludeWeekends ? workingDaysCount : totalDays,
@@ -318,7 +355,9 @@ export function calculateDateDifference(
     weeks: totalWeeks,
     hours: totalDays * 24,
     minutes: totalDays * 24 * 60,
-    seconds: totalDays * 24 * 3600
+    seconds: totalDays * 24 * 3600,
+    totalMonthsApart,
+    monthsAndDaysDays
   };
 }
 

@@ -119,6 +119,7 @@ export interface TranslationDictionary {
   shareTemplateAge: string;
   shareTemplateDiff: string;
   shareTemplateDuration: string;
+  printBtn: string;
 }
 
 export interface FAQItem {

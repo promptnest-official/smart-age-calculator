@@ -107,6 +107,7 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     shareTemplateAge: "My exact age is {result}! Calculated with European precision using Smart Age & Date Calculator Pro:",
     shareTemplateDiff: "Calculated date span: {result} between dates. See details:",
     shareTemplateDuration: "Calculated target date: {result}. Check out the precision calendar tool:",
+    printBtn: "Print Results",
   },
   DE: {
     title: "Smart Age & Date Calculator Pro",
@@ -214,6 +215,7 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     shareTemplateAge: "Mein genaues Alter ist {result}! Berechnet mit europäischer Präzision auf dem Smart Age & Date Calculator:",
     shareTemplateDiff: "Berechnete Zeitspanne: {result}. Details ansehen:",
     shareTemplateDuration: "Berechnetes Zieldatum: {result}. Siehe Präzisions-Kalenderwerkzeug:",
+    printBtn: "Ergebnisse drucken",
   },
   FR: {
     title: "Smart Age & Date Calculator Pro",
@@ -321,6 +323,7 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     shareTemplateAge: "Mon âge exact est {result} ! Calculé avec précision grâce au Smart Age & Date Calculator Pro :",
     shareTemplateDiff: "Intervalle calculé : {result}. Voir les détails ici :",
     shareTemplateDuration: "Date cible calculée : {result}. Voir l'utilitaire de précision :",
+    printBtn: "Imprimer les résultats",
   },
   ES: {
     title: "Smart Age & Date Calculator Pro",
@@ -428,6 +431,7 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     shareTemplateAge: "¡Mi edad exacta es {result}! Calculado con precisión europea usando Smart Age & Date Calculator Pro:",
     shareTemplateDiff: "Intervalo calculado: {result}. Ver detalles aquí:",
     shareTemplateDuration: "Fecha destino calculada: {result}. Ver la herramienta de precisión:",
+    printBtn: "Imprimir resultados",
   },
   IT: {
     title: "Smart Age & Date Calculator Pro",
@@ -535,6 +539,7 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     shareTemplateAge: "La mia età esatta è {result}! Calcolata con precisione europea usando Smart Age & Date Calculator Pro:",
     shareTemplateDiff: "Intervallo date calcolato: {result}. Vedi i dettagli qui:",
     shareTemplateDuration: "Data di destinazione calcolata: {result}. Vedi lo strumento di precisione:",
+    printBtn: "Stampa risultati",
   }
 };
 
