@@ -134,6 +134,10 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     loadInCalculatorBtn: "Calculate Age",
     setPrimaryReminderBtn: "Feature in Countdown Widget",
     daysLeftText: "days remaining",
+    export30DaysPdfBtn: "30-Day PDF Report",
+    export30DaysPdfDesc: "Export last 30 days of calculation history as a PDF summary report",
+    historyPdfExportedToast: "30-Day History PDF Report generated!",
+    noHistoryToExportError: "No calculation history found to export.",
   },
   DE: {
     title: "Smart Age & Date Calculator Pro",
@@ -268,6 +272,10 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     loadInCalculatorBtn: "Alter berechnen",
     setPrimaryReminderBtn: "Im Widget anzeigen",
     daysLeftText: "Tage verbleibend",
+    export30DaysPdfBtn: "30-Tage PDF-Bericht",
+    export30DaysPdfDesc: "Verlauf der letzten 30 Tage als PDF-Zusammenfassung exportieren",
+    historyPdfExportedToast: "30-Tage PDF-Verlaufsbericht erfolgreich erstellt!",
+    noHistoryToExportError: "Kein Berechnungsverlauf zum Exportieren vorhanden.",
   },
   FR: {
     title: "Smart Age & Date Calculator Pro",
@@ -402,6 +410,10 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     loadInCalculatorBtn: "Calculer l'âge",
     setPrimaryReminderBtn: "Afficher dans le widget",
     daysLeftText: "jours restants",
+    export30DaysPdfBtn: "Rapport PDF 30 jours",
+    export30DaysPdfDesc: "Exporter l'historique des 30 derniers jours sous forme de rapport PDF",
+    historyPdfExportedToast: "Rapport PDF des 30 derniers jours généré !",
+    noHistoryToExportError: "Aucun historique de calcul à exporter.",
   },
   ES: {
     title: "Smart Age & Date Calculator Pro",
@@ -536,6 +548,10 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     loadInCalculatorBtn: "Calcular edad",
     setPrimaryReminderBtn: "Destacar en widget",
     daysLeftText: "días restantes",
+    export30DaysPdfBtn: "Informe PDF 30 días",
+    export30DaysPdfDesc: "Exportar historial de los últimos 30 días como un informe PDF resumen",
+    historyPdfExportedToast: "¡Informe PDF del historial de 30 días generado!",
+    noHistoryToExportError: "No hay historial de cálculos para exportar.",
   },
   IT: {
     title: "Smart Age & Date Calculator Pro",
@@ -670,6 +686,10 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     loadInCalculatorBtn: "Calcola età",
     setPrimaryReminderBtn: "Mostra nel widget",
     daysLeftText: "giorni rimanenti",
+    export30DaysPdfBtn: "Report PDF 30 giorni",
+    export30DaysPdfDesc: "Esporta la cronologia degli ultimi 30 giorni come report PDF riassuntivo",
+    historyPdfExportedToast: "Report PDF della cronologia di 30 giorni generato!",
+    noHistoryToExportError: "Nessuna cronologia di calcolo da esportare.",
   }
 };
 

@@ -16,6 +16,7 @@ import {
   BookmarkCheck,
   Scale,
   FileDown,
+  FileText,
   History,
   Trash2,
   Save,
@@ -797,7 +798,7 @@ export default function App() {
         !(item.type === type && JSON.stringify(item.inputs) === JSON.stringify(inputs))
       );
       const updated = [newItem, ...filtered];
-      return updated.slice(0, 5);
+      return updated.slice(0, 50);
     });
 
     showToast(dict.historySavedToast);
@@ -898,6 +899,185 @@ export default function App() {
     document.body.removeChild(link);
     
     showToast(hLocal.exportSuccess);
+  };
+
+  const handleExportHistory30DaysPDF = () => {
+    if (history.length === 0) {
+      showToast(dict.noHistoryToExportError);
+      return;
+    }
+
+    const thirtyDaysAgoMs = Date.now() - (30 * 24 * 60 * 60 * 1000);
+    
+    // Filter history items calculated in last 30 days
+    const recentHistory = history.filter(item => {
+      const itemTime = item.createdAt ? new Date(item.createdAt).getTime() : parseInt(item.id);
+      if (!isNaN(itemTime)) {
+        return itemTime >= thirtyDaysAgoMs;
+      }
+      return true;
+    });
+
+    const itemsToExport = recentHistory.length > 0 ? recentHistory : history;
+
+    const doc = new jsPDF();
+    
+    // Header Banner
+    doc.setFillColor(30, 27, 75); // Indigo 950
+    doc.rect(0, 0, 210, 42, 'F');
+    
+    // Title & Logo
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.text("30-DAY CALCULATION HISTORY SUMMARY REPORT", 15, 16);
+    
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(199, 210, 254);
+    doc.text("Smart Age & Date Calculator Pro — European Standard Local Export", 15, 23);
+    
+    // Meta dates
+    const nowStr = new Date().toLocaleString(lang === 'DE' ? 'de-DE' : lang === 'FR' ? 'fr-FR' : lang === 'ES' ? 'es-ES' : lang === 'IT' ? 'it-IT' : 'en-US');
+    doc.setFontSize(7);
+    doc.setTextColor(224, 231, 255);
+    doc.text(`${dict.pdfGeneratedOn}: ${nowStr} | Period: Last 30 Days (${itemsToExport.length} Entry/Entries)`, 15, 33);
+
+    let y = 52;
+
+    // Helper for Section Headers
+    const drawSectionHeader = (title: string) => {
+      doc.setFillColor(248, 250, 252);
+      doc.rect(12, y - 5, 186, 8, 'F');
+      
+      doc.setDrawColor(226, 232, 240);
+      doc.line(12, y - 5, 198, y - 5);
+      doc.line(12, y + 3, 198, y + 3);
+      doc.line(12, y - 5, 12, y + 3);
+      doc.line(198, y - 5, 198, y + 3);
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8.5);
+      doc.setTextColor(79, 70, 229);
+      doc.text(title.toUpperCase(), 16, y);
+      y += 10;
+    };
+
+    // Summary Statistics Header
+    drawSectionHeader("30-Day Activity Overview");
+    
+    const ageCount = itemsToExport.filter(i => i.type === 'age').length;
+    const diffCount = itemsToExport.filter(i => i.type === 'diff').length;
+    const durCount = itemsToExport.filter(i => i.type === 'duration').length;
+
+    // Stat Box 1
+    doc.setFillColor(243, 244, 246);
+    doc.rect(15, y, 55, 16, 'F');
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(15, 23, 42);
+    doc.text(String(itemsToExport.length), 20, y + 8);
+    doc.setFontSize(7);
+    doc.setTextColor(100, 116, 139);
+    doc.text("Total Calculations", 20, y + 13);
+
+    // Stat Box 2
+    doc.setFillColor(238, 242, 255);
+    doc.rect(75, y, 55, 16, 'F');
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(67, 56, 202);
+    doc.text(String(ageCount), 80, y + 8);
+    doc.setFontSize(7);
+    doc.setTextColor(99, 102, 241);
+    doc.text("Age Calculations", 80, y + 13);
+
+    // Stat Box 3
+    doc.setFillColor(236, 253, 245);
+    doc.rect(135, y, 55, 16, 'F');
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(4, 120, 87);
+    doc.text(String(diffCount + durCount), 140, y + 8);
+    doc.setFontSize(7);
+    doc.setTextColor(16, 185, 129);
+    doc.text("Date Spans & Duration", 140, y + 13);
+
+    y += 24;
+
+    drawSectionHeader("30-Day Calculation Logs");
+
+    itemsToExport.forEach((item, index) => {
+      // Page break check
+      if (y > 255) {
+        doc.addPage();
+        // Page Header
+        doc.setFillColor(30, 27, 75);
+        doc.rect(0, 0, 210, 15, 'F');
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8);
+        doc.setTextColor(255, 255, 255);
+        doc.text("30-DAY HISTORY REPORT - Continued", 15, 10);
+        y = 26;
+      }
+
+      // Record Box
+      doc.setFillColor(250, 250, 250);
+      doc.setDrawColor(226, 232, 240);
+      doc.roundedRect(15, y, 180, 22, 2, 2, 'FD');
+
+      // Tag
+      const typeLabel = item.type === 'age' ? 'AGE CALCULATOR' : item.type === 'diff' ? 'DATE DIFFERENCE' : 'DATE ARITHMETIC';
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7.5);
+      if (item.type === 'age') doc.setTextColor(67, 56, 202);
+      else if (item.type === 'diff') doc.setTextColor(4, 120, 87);
+      else doc.setTextColor(126, 34, 206);
+      
+      doc.text(`#${index + 1}  [${typeLabel}]`, 20, y + 6);
+
+      // Time
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(148, 163, 184);
+      doc.text(item.timestamp, 150, y + 6);
+
+      // Summary
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8.5);
+      doc.setTextColor(30, 41, 59);
+      doc.text(item.summary, 20, y + 12);
+
+      // Results Line
+      let resultText = '';
+      if (item.type === 'age') {
+        resultText = `${dict.years}: ${item.results.years || 0} | ${dict.months}: ${item.results.months || 0} | ${dict.days}: ${item.results.days || 0}`;
+      } else if (item.type === 'diff') {
+        resultText = `${dict.totalCalendarDays}: ${item.results.totalDays || 0} | ${dict.workingDaysOnly.split('(')[0]}: ${item.results.workingDays || 0}`;
+      } else {
+        resultText = `${dict.resultingDateLabel}: ${item.results.resultDate || ''} (${item.results.dayOfWeek || ''})`;
+      }
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(71, 85, 105);
+      doc.text(resultText, 20, y + 17);
+
+      y += 26;
+    });
+
+    // Page footer
+    const pageCount = (doc as any).internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(148, 163, 184);
+      doc.text(`Page ${i} of ${pageCount} — Smart Age & Date Calculator Pro (30-Day History Report)`, 15, 288);
+    }
+
+    doc.save(`calculation_history_30days_report_${new Date().toISOString().split('T')[0]}.pdf`);
+    showToast(dict.historyPdfExportedToast || "30-Day History PDF Report generated!");
   };
 
   return (
@@ -2302,17 +2482,6 @@ export default function App() {
                   </h2>
                 </div>
                 <div className="flex items-center gap-2">
-                  {history.length > 0 && (
-                    <button
-                      id="history-export-csv"
-                      onClick={handleExportCSV}
-                      className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded text-[9px] font-bold uppercase tracking-wider transition cursor-pointer"
-                      title={hLocal.exportCsvDesc}
-                    >
-                      <Download className="w-3 h-3 text-emerald-600" />
-                      {hLocal.exportCsv}
-                    </button>
-                  )}
                   <button
                     onClick={() => setDrawerOpen(false)}
                     className="text-slate-400 hover:text-indigo-600 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded hover:bg-slate-100 transition cursor-pointer"
@@ -2321,6 +2490,42 @@ export default function App() {
                   </button>
                 </div>
               </div>
+
+              {/* Export Toolbar */}
+              {history.length > 0 && (
+                <div id="history-export-actions-bar" className="bg-indigo-50/60 border-b border-indigo-100/80 px-4 py-2.5 flex flex-col gap-2 shrink-0">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                      <FileText className="w-3.5 h-3.5 text-indigo-600" />
+                      <span>{dict.export30DaysPdfDesc}</span>
+                    </span>
+                    <span className="text-[9px] font-mono font-bold text-indigo-600 bg-indigo-100/80 px-1.5 py-0.5 rounded">
+                      {history.length} Logs
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      id="btn-export-30days-pdf"
+                      onClick={handleExportHistory30DaysPDF}
+                      className="w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[10px] font-extrabold uppercase tracking-wider transition cursor-pointer shadow-xs active:scale-95"
+                      title={dict.export30DaysPdfDesc}
+                    >
+                      <FileText className="w-3.5 h-3.5 text-white shrink-0" />
+                      <span>{dict.export30DaysPdfBtn}</span>
+                    </button>
+
+                    <button
+                      id="history-export-csv"
+                      onClick={handleExportCSV}
+                      className="w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-[10px] font-bold uppercase tracking-wider transition cursor-pointer shadow-2xs"
+                      title={hLocal.exportCsvDesc}
+                    >
+                      <Download className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span>CSV Export</span>
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Scrollable list of history items */}
               <div className="flex-grow p-5 overflow-y-auto space-y-4">

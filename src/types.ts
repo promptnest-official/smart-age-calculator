@@ -150,6 +150,12 @@ export interface TranslationDictionary {
   loadInCalculatorBtn: string;
   setPrimaryReminderBtn: string;
   daysLeftText: string;
+
+  // 30-Day History PDF Export
+  export30DaysPdfBtn: string;
+  export30DaysPdfDesc: string;
+  historyPdfExportedToast: string;
+  noHistoryToExportError: string;
 }
 
 export interface FAQItem {
