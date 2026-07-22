@@ -241,6 +241,104 @@ export function calculateExactAge(
   };
 }
 
+export interface UpcomingBirthdayDetails {
+  nextBirthdayDate: Date;
+  nextBirthdayDateStr: string;
+  totalDaysLeft: number;
+  monthsLeft: number;
+  daysLeft: number;
+  hoursLeft: number;
+  minutesLeft: number;
+  secondsLeft: number;
+  turningAge: number;
+  dayOfWeek: string;
+  isToday: boolean;
+  isValid: boolean;
+}
+
+export function calculateUpcomingBirthdayCountdown(
+  birthDateStr: string,
+  lang: Language = 'EN',
+  refDate: Date = new Date()
+): UpcomingBirthdayDetails {
+  const birth = new Date(birthDateStr);
+  if (isNaN(birth.getTime())) {
+    return {
+      nextBirthdayDate: new Date(),
+      nextBirthdayDateStr: '',
+      totalDaysLeft: 0,
+      monthsLeft: 0,
+      daysLeft: 0,
+      hoursLeft: 0,
+      minutesLeft: 0,
+      secondsLeft: 0,
+      turningAge: 0,
+      dayOfWeek: '',
+      isToday: false,
+      isValid: false
+    };
+  }
+
+  const currentYear = refDate.getFullYear();
+  let nextBday = new Date(currentYear, birth.getMonth(), birth.getDate());
+
+  // If birthday already passed this year (or is today with past time), move to next year
+  if (nextBday.getTime() < refDate.getTime() && 
+      (refDate.getMonth() !== birth.getMonth() || refDate.getDate() !== birth.getDate())) {
+    nextBday.setFullYear(currentYear + 1);
+  }
+
+  const turningAge = nextBday.getFullYear() - birth.getFullYear();
+  const diffMs = Math.max(0, nextBday.getTime() - refDate.getTime());
+  
+  const isToday = refDate.getMonth() === birth.getMonth() && refDate.getDate() === birth.getDate();
+
+  const totalDaysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  const totalSecondsLeft = Math.floor(diffMs / 1000);
+  const hoursLeft = Math.floor((totalSecondsLeft % 86400) / 3600);
+  const minutesLeft = Math.floor((totalSecondsLeft % 3600) / 60);
+  const secondsLeft = totalSecondsLeft % 60;
+
+  let monthsLeft = nextBday.getMonth() - refDate.getMonth();
+  let daysLeft = nextBday.getDate() - refDate.getDate();
+
+  if (daysLeft < 0) {
+    const prevMonth = new Date(nextBday.getFullYear(), nextBday.getMonth(), 0);
+    daysLeft += prevMonth.getDate();
+    monthsLeft--;
+  }
+
+  if (monthsLeft < 0) {
+    monthsLeft += 12;
+  }
+
+  const daysOfWeekLocal: Record<Language, string[]> = {
+    EN: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+    DE: ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
+    FR: ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"],
+    ES: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
+    IT: ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"]
+  };
+
+  const dayOfWeek = daysOfWeekLocal[lang][nextBday.getDay()];
+  const nextBirthdayDateStr = nextBday.toISOString().split('T')[0];
+
+  return {
+    nextBirthdayDate: nextBday,
+    nextBirthdayDateStr,
+    totalDaysLeft,
+    monthsLeft,
+    daysLeft,
+    hoursLeft,
+    minutesLeft,
+    secondsLeft,
+    turningAge,
+    dayOfWeek,
+    isToday,
+    isValid: true
+  };
+}
+
 // Date Difference calculator
 export interface DateDiffResult {
   totalDays: number;

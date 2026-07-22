@@ -23,17 +23,25 @@ import {
   Copy,
   Printer,
   AlertTriangle,
-  ArrowLeftRight
+  ArrowLeftRight,
+  Gift,
+  Bell,
+  Star,
+  UserPlus,
+  Heart,
+  Plus,
+  X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { jsPDF } from 'jspdf';
-import { Language, HistoryItem } from './types';
+import { Language, HistoryItem, BirthdayReminder } from './types';
 import { TRANSLATIONS, FAQ_ITEMS } from './translations';
 import { 
   calculateExactAge, 
   calculateDateDifference, 
   calculateDateDuration, 
-  compileStandaloneHTML 
+  compileStandaloneHTML,
+  calculateUpcomingBirthdayCountdown 
 } from './utils';
 
 const monthsDaysLocal = {
@@ -220,6 +228,125 @@ export default function App() {
       setGdprDismissed(true);
     }
   }, []);
+
+  // --- Birthday Reminders & Countdown Widget States ---
+  const defaultReminders: BirthdayReminder[] = [
+    {
+      id: 'rem-1',
+      name: 'Mom',
+      birthDate: '1968-05-15',
+      note: 'Loves flowers & coffee',
+      isPrimary: true,
+      createdAt: new Date().toISOString()
+    },
+    {
+      id: 'rem-2',
+      name: 'Alex (Best Friend)',
+      birthDate: '1995-11-08',
+      note: 'Milestone birthday coming up!',
+      isPrimary: false,
+      createdAt: new Date().toISOString()
+    }
+  ];
+
+  const [birthdayReminders, setBirthdayReminders] = useState<BirthdayReminder[]>(() => {
+    try {
+      const saved = localStorage.getItem('smart_age_birthday_reminders');
+      return saved ? JSON.parse(saved) : defaultReminders;
+    } catch {
+      return defaultReminders;
+    }
+  });
+
+  const [featuredReminderId, setFeaturedReminderId] = useState<string | null>(() => {
+    try {
+      const savedId = localStorage.getItem('smart_age_featured_reminder_id');
+      return savedId || null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [addReminderModalOpen, setAddReminderModalOpen] = useState<boolean>(false);
+  const [reminderName, setReminderName] = useState<string>('');
+  const [reminderDate, setReminderDate] = useState<string>('');
+  const [reminderNote, setReminderNote] = useState<string>('');
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('smart_age_birthday_reminders', JSON.stringify(birthdayReminders));
+    } catch (e) {
+      console.error('Failed to persist birthday reminders:', e);
+    }
+  }, [birthdayReminders]);
+
+  useEffect(() => {
+    if (featuredReminderId) {
+      localStorage.setItem('smart_age_featured_reminder_id', featuredReminderId);
+    } else {
+      localStorage.removeItem('smart_age_featured_reminder_id');
+    }
+  }, [featuredReminderId]);
+
+  const handleSaveBirthdayReminder = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reminderName.trim() || !reminderDate) {
+      return;
+    }
+
+    const newReminder: BirthdayReminder = {
+      id: 'rem-' + Date.now(),
+      name: reminderName.trim(),
+      birthDate: reminderDate,
+      note: reminderNote.trim() || undefined,
+      isPrimary: birthdayReminders.length === 0,
+      createdAt: new Date().toISOString()
+    };
+
+    setBirthdayReminders(prev => [newReminder, ...prev]);
+    if (birthdayReminders.length === 0 || !featuredReminderId) {
+      setFeaturedReminderId(newReminder.id);
+    }
+
+    setReminderName('');
+    setReminderDate('');
+    setReminderNote('');
+    setAddReminderModalOpen(false);
+    showToast(dict.reminderSavedToast || "Annual birthday reminder saved locally!");
+  };
+
+  const handleDeleteBirthdayReminder = (id: string) => {
+    setBirthdayReminders(prev => prev.filter(r => r.id !== id));
+    if (featuredReminderId === id) {
+      setFeaturedReminderId(null);
+    }
+    showToast(dict.reminderDeletedToast || "Birthday reminder deleted!");
+  };
+
+  const handleSetPrimaryReminder = (id: string) => {
+    setFeaturedReminderId(id);
+    setBirthdayReminders(prev => prev.map(r => ({
+      ...r,
+      isPrimary: r.id === id
+    })));
+    showToast(dict.presetApplied || "Featured in countdown widget!");
+  };
+
+  const handleLoadReminderIntoCalc = (bDate: string) => {
+    setBirthDate(bDate);
+    setActiveTab('age');
+    showToast(dict.historyLoadedToast || "Loaded into Age Calculator!");
+  };
+
+  const handleOpenAddReminderWithDate = (prefillDate?: string, defaultName?: string) => {
+    setReminderDate(prefillDate || birthDate || new Date().toISOString().split('T')[0]);
+    setReminderName(defaultName || '');
+    setReminderNote('');
+    setAddReminderModalOpen(false);
+    setTimeout(() => {
+      setAddReminderModalOpen(true);
+    }, 50);
+  };
 
   // --- Sharing States ---
   const [shareModalOpen, setShareModalOpen] = useState<boolean>(false);
@@ -571,6 +698,18 @@ export default function App() {
     durSkipWeekends, 
     lang
   );
+
+  // Active Birthday Reminder for Countdown Widget
+  const activeReminder = birthdayReminders.find(r => r.id === featuredReminderId) 
+    || birthdayReminders.find(r => r.isPrimary) 
+    || birthdayReminders[0] 
+    || null;
+
+  const activeBirthDateForCountdown = activeReminder ? activeReminder.birthDate : birthDate;
+  const activeNameForCountdown = activeReminder ? activeReminder.name : "Your Birthday";
+  const activeNoteForCountdown = activeReminder?.note;
+
+  const featuredCountdown = calculateUpcomingBirthdayCountdown(activeBirthDateForCountdown, lang);
 
   // Validation Checks
   const isDiffDateInvalid = Boolean(startDate && endDate && new Date(startDate).getTime() > new Date(endDate).getTime());
@@ -960,6 +1099,16 @@ export default function App() {
                     />
                   </div>
 
+                  <button
+                    type="button"
+                    id="btn-save-reminder-from-input"
+                    onClick={() => handleOpenAddReminderWithDate(birthDate)}
+                    className="w-full py-2 px-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200/80 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs active:scale-95"
+                  >
+                    <Gift className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                    <span>{dict.addBirthdayReminderBtn}</span>
+                  </button>
+
                   <hr className="border-slate-100" />
 
                   {/* Quick Presets */}
@@ -1149,33 +1298,93 @@ export default function App() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Countdown Card */}
-                    <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
-                      <div>
-                        <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5 mb-1">
-                          <span className="w-1 h-3 bg-indigo-600 rounded-full"></span>
-                          {dict.nextBirthdayTitle}
-                        </h4>
-                        <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">{dict.countdownPrefix}</p>
+                    {/* Countdown Card Widget */}
+                    <div id="countdown-widget-card" className="bg-white p-4.5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <div>
+                          <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                            <Gift className="w-4 h-4 text-indigo-600 shrink-0" />
+                            <span>{activeNameForCountdown}'s Birthday</span>
+                          </h4>
+                          <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mt-0.5">
+                            {dict.nextBirthdayCountdown}
+                          </p>
+                        </div>
+
+                        {birthdayReminders.length > 0 && (
+                          <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded px-1.5 py-0.5 shadow-2xs">
+                            <Star className="w-3 h-3 text-amber-500 fill-amber-400 shrink-0" />
+                            <select
+                              id="select-featured-reminder"
+                              value={activeReminder ? activeReminder.id : ''}
+                              onChange={(e) => {
+                                if (e.target.value) {
+                                  handleSetPrimaryReminder(e.target.value);
+                                }
+                              }}
+                              className="bg-transparent text-[10px] font-bold text-slate-700 uppercase tracking-wider focus:outline-none cursor-pointer max-w-[120px] truncate"
+                            >
+                              {birthdayReminders.map(rem => (
+                                <option key={rem.id} value={rem.id}>
+                                  {rem.name} ({rem.birthDate})
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
                       </div>
 
-                      <div className="flex items-center gap-3 py-3 my-3 border-y border-slate-100">
-                        <div className="text-center flex-1">
-                          <span className="block text-2xl font-black text-slate-800 font-mono">{ageResults.nextBirthday.months}</span>
-                          <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">{dict.months}</span>
+                      <div className="grid grid-cols-4 gap-2 py-2 border-y border-slate-100 text-center font-mono">
+                        <div className="bg-indigo-50/60 p-2 rounded border border-indigo-100/80">
+                          <span className="block text-xl font-black text-indigo-950">{featuredCountdown.monthsLeft}</span>
+                          <span className="text-[9px] text-indigo-600 font-bold uppercase tracking-wider font-sans">{dict.months}</span>
                         </div>
-                        <div className="text-center flex-1 border-l border-slate-100">
-                          <span className="block text-2xl font-black text-slate-800 font-mono">{ageResults.nextBirthday.days}</span>
-                          <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">{dict.days}</span>
+                        <div className="bg-indigo-50/60 p-2 rounded border border-indigo-100/80">
+                          <span className="block text-xl font-black text-indigo-950">{featuredCountdown.daysLeft}</span>
+                          <span className="text-[9px] text-indigo-600 font-bold uppercase tracking-wider font-sans">{dict.days}</span>
                         </div>
-                        <div className="text-center flex-1 border-l border-slate-100">
-                          <span className="block text-2xl font-black text-slate-800 font-mono">{ageResults.nextBirthday.hours}</span>
-                          <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">{dict.hours}</span>
+                        <div className="bg-slate-50 p-2 rounded border border-slate-200/60">
+                          <span className="block text-lg font-bold text-slate-800">{String(featuredCountdown.hoursLeft).padStart(2, '0')}</span>
+                          <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider font-sans">{dict.hours}</span>
+                        </div>
+                        <div className="bg-slate-50 p-2 rounded border border-slate-200/60">
+                          <span className="block text-lg font-bold text-indigo-700">{String(featuredCountdown.secondsLeft).padStart(2, '0')}</span>
+                          <span className="text-[9px] text-indigo-500 font-bold uppercase tracking-wider font-sans">{dict.seconds}</span>
                         </div>
                       </div>
 
-                      <div className="text-[10px] font-bold text-indigo-700 bg-indigo-50 rounded-lg p-2.5 text-center uppercase tracking-wider">
-                        🎉 {ageResults.nextBirthday.totalDaysLeft} {lang === 'DE' ? 'Tage verbleibend' : lang === 'FR' ? 'jours restants' : lang === 'ES' ? 'días restantes' : lang === 'IT' ? 'giorni rimanenti' : 'days remaining'}
+                      <div className="space-y-2">
+                        <div className="flex flex-wrap items-center justify-between gap-1 text-[10px] font-bold text-slate-600 bg-slate-50 rounded-lg p-2.5 border border-slate-200/70">
+                          <span className="flex items-center gap-1 text-indigo-700">
+                            <Sparkles className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                            {dict.turnsAge}: <strong className="text-indigo-950 text-xs font-mono">{featuredCountdown.turningAge}</strong>
+                          </span>
+                          <span className="text-slate-500 font-mono">
+                            {featuredCountdown.dayOfWeek}, {featuredCountdown.nextBirthdayDateStr}
+                          </span>
+                        </div>
+
+                        {activeNoteForCountdown && (
+                          <p className="text-[10px] italic text-slate-600 bg-amber-50/70 border border-amber-200/60 rounded px-2.5 py-1">
+                            💡 {activeNoteForCountdown}
+                          </p>
+                        )}
+
+                        <div className="flex items-center justify-between gap-2 pt-1">
+                          <div className="text-[10px] font-bold text-indigo-700 bg-indigo-50 rounded-md px-2.5 py-1 text-center uppercase tracking-wider border border-indigo-100">
+                            🎉 {featuredCountdown.totalDaysLeft} {dict.daysLeftText}
+                          </div>
+
+                          <button
+                            type="button"
+                            id="btn-add-reminder-widget"
+                            onClick={() => handleOpenAddReminderWithDate(activeBirthDateForCountdown, activeNameForCountdown !== "Your Birthday" ? activeNameForCountdown : "")}
+                            className="text-[10px] font-bold text-indigo-700 hover:text-indigo-900 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200 rounded px-2.5 py-1 transition flex items-center gap-1 cursor-pointer"
+                          >
+                            <UserPlus className="w-3 h-3 text-indigo-600 shrink-0" />
+                            <span>{dict.addBirthdayReminderBtn}</span>
+                          </button>
+                        </div>
                       </div>
                     </div>
 
@@ -1262,6 +1471,136 @@ export default function App() {
                       <span className="block text-xl font-black text-slate-800 font-mono">{ageResults.sleepHours}</span>
                       <span className="text-[9px] text-slate-400 uppercase font-bold tracking-wider">{dict.approxSleep}</span>
                     </div>
+                  </div>
+
+                  {/* Saved Annual Birthday Reminders Manager Section */}
+                  <div id="birthday-reminders-manager" className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                      <div className="space-y-0.5">
+                        <h3 className="font-extrabold text-xs sm:text-sm text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                          <Gift className="w-4 h-4 text-indigo-600 shrink-0" />
+                          <span>{dict.birthdayRemindersTitle}</span>
+                          <span className="text-[10px] font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full font-mono">
+                            {birthdayReminders.length}
+                          </span>
+                        </h3>
+                        <p className="text-[11px] text-slate-500">
+                          {dict.birthdayRemindersDesc}
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        id="btn-open-add-reminder"
+                        onClick={() => handleOpenAddReminderWithDate(birthDate)}
+                        className="py-2 px-3.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition-all duration-150 flex items-center gap-1.5 cursor-pointer shadow-xs shrink-0 active:scale-95"
+                      >
+                        <Plus className="w-4 h-4 shrink-0" />
+                        <span>{dict.addBirthdayReminderBtn}</span>
+                      </button>
+                    </div>
+
+                    {birthdayReminders.length === 0 ? (
+                      <div className="text-center py-8 px-4 bg-slate-50/70 rounded-xl border border-dashed border-slate-200 space-y-3">
+                        <div className="w-12 h-12 bg-indigo-50 border border-indigo-100 rounded-full flex items-center justify-center mx-auto text-indigo-600 shadow-2xs">
+                          <Gift className="w-6 h-6" />
+                        </div>
+                        <p className="text-xs font-medium text-slate-600 max-w-md mx-auto leading-relaxed">
+                          {dict.noRemindersSaved}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenAddReminderWithDate(birthDate)}
+                          className="py-1.5 px-3.5 bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-bold rounded-lg transition-all cursor-pointer shadow-2xs inline-flex items-center gap-1.5"
+                        >
+                          <UserPlus className="w-3.5 h-3.5 text-indigo-600" />
+                          <span>{dict.addBirthdayReminderBtn}</span>
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {birthdayReminders.map((reminder) => {
+                          const cd = calculateUpcomingBirthdayCountdown(reminder.birthDate, lang);
+                          const isFeatured = (reminder.id === featuredReminderId) || (!featuredReminderId && reminder.isPrimary);
+
+                          return (
+                            <div
+                              key={reminder.id}
+                              className={`p-3.5 rounded-xl border transition-all duration-150 flex flex-col justify-between gap-3 ${
+                                isFeatured 
+                                  ? 'bg-gradient-to-br from-indigo-50/80 via-white to-indigo-50/30 border-indigo-300 shadow-xs ring-1 ring-indigo-200' 
+                                  : 'bg-white border-slate-200 hover:border-slate-300 shadow-2xs'
+                              }`}
+                            >
+                              <div className="space-y-1.5">
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="space-y-0.5 min-w-0">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="font-extrabold text-xs text-slate-900 truncate">{reminder.name}</span>
+                                      {isFeatured && (
+                                        <span className="text-[8px] font-black uppercase tracking-wider bg-indigo-600 text-white px-1.5 py-0.5 rounded shadow-2xs shrink-0">
+                                          Featured
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="text-[10px] font-mono font-bold text-slate-500">
+                                      🎂 {reminder.birthDate}
+                                    </div>
+                                  </div>
+
+                                  <button
+                                    type="button"
+                                    title="Toggle Featured in Countdown Widget"
+                                    onClick={() => handleSetPrimaryReminder(reminder.id)}
+                                    className={`p-1 rounded transition cursor-pointer ${
+                                      isFeatured ? 'text-amber-500 bg-amber-50' : 'text-slate-300 hover:text-amber-400'
+                                    }`}
+                                  >
+                                    <Star className="w-4 h-4 fill-current" />
+                                  </button>
+                                </div>
+
+                                {reminder.note && (
+                                  <p className="text-[10px] text-slate-500 line-clamp-2 bg-slate-50 p-1.5 rounded border border-slate-100 italic">
+                                    "{reminder.note}"
+                                  </p>
+                                )}
+
+                                <div className="bg-indigo-50/60 p-2 rounded-lg border border-indigo-100/70 text-[10px] space-y-0.5">
+                                  <div className="flex justify-between items-center text-indigo-950 font-bold">
+                                    <span>{dict.turnsAge} {cd.turningAge}</span>
+                                    <span className="text-indigo-700 font-mono">in {cd.totalDaysLeft} days</span>
+                                  </div>
+                                  <div className="text-[9px] text-slate-500 font-mono">
+                                    {cd.dayOfWeek}, {cd.nextBirthdayDateStr}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center justify-between gap-1.5 pt-2 border-t border-slate-100 text-[10px]">
+                                <button
+                                  type="button"
+                                  onClick={() => handleLoadReminderIntoCalc(reminder.birthDate)}
+                                  className="py-1 px-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded transition cursor-pointer flex items-center gap-1"
+                                >
+                                  <Clock className="w-3 h-3 text-slate-500" />
+                                  <span>{dict.loadInCalculatorBtn}</span>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteBirthdayReminder(reminder.id)}
+                                  className="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition cursor-pointer"
+                                  title={dict.deleteReminderBtn}
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                     </>
                   )}
@@ -2207,6 +2546,106 @@ export default function App() {
             </div>
           );
         })()}
+      </AnimatePresence>
+
+      {/* Add Birthday Reminder Modal */}
+      <AnimatePresence>
+        {addReminderModalOpen && (
+          <div id="add-reminder-modal-overlay" className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="bg-white rounded-xl border border-slate-200 shadow-xl max-w-md w-full p-5 space-y-4"
+            >
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
+                    <Gift className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold text-xs sm:text-sm text-slate-900 uppercase tracking-wider">
+                      {dict.addBirthdayReminderBtn}
+                    </h3>
+                    <p className="text-[10px] text-slate-400">
+                      Saved locally in browser storage (GDPR Compliant)
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  id="btn-close-reminder-modal"
+                  onClick={() => setAddReminderModalOpen(false)}
+                  className="p-1 text-slate-400 hover:text-slate-600 rounded transition cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveBirthdayReminder} className="space-y-3.5">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                    {dict.reminderNameLabel} *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    id="input-reminder-name"
+                    value={reminderName}
+                    onChange={(e) => setReminderName(e.target.value)}
+                    placeholder={dict.reminderNamePlaceholder}
+                    className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-lg p-2.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                    {dict.reminderDateLabel} *
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    id="input-reminder-date"
+                    value={reminderDate}
+                    onChange={(e) => setReminderDate(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-lg p-2.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                    {dict.reminderNoteLabel}
+                  </label>
+                  <input
+                    type="text"
+                    id="input-reminder-note"
+                    value={reminderNote}
+                    onChange={(e) => setReminderNote(e.target.value)}
+                    placeholder={dict.reminderNotePlaceholder}
+                    className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-lg p-2.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium"
+                  />
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setAddReminderModalOpen(false)}
+                    className="py-2 px-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition cursor-pointer"
+                  >
+                    {dict.close}
+                  </button>
+                  <button
+                    type="submit"
+                    id="btn-submit-save-reminder"
+                    className="py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition cursor-pointer shadow-xs"
+                  >
+                    {dict.saveReminderBtn}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
       </AnimatePresence>
 
       {/* Floating compiled toast message */}

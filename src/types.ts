@@ -128,11 +128,42 @@ export interface TranslationDictionary {
   swapDatesBtn: string;
   resetDatesBtn: string;
   cannotExportInvalidError: string;
+
+  // Birthday Reminders & Countdown Widget
+  birthdayRemindersTitle: string;
+  birthdayRemindersDesc: string;
+  addBirthdayReminderBtn: string;
+  saveReminderBtn: string;
+  reminderNameLabel: string;
+  reminderNamePlaceholder: string;
+  reminderDateLabel: string;
+  reminderNoteLabel: string;
+  reminderNotePlaceholder: string;
+  savedRemindersTitle: string;
+  nextBirthdayCountdown: string;
+  noRemindersSaved: string;
+  turnsAge: string;
+  upcomingOn: string;
+  reminderSavedToast: string;
+  reminderDeletedToast: string;
+  deleteReminderBtn: string;
+  loadInCalculatorBtn: string;
+  setPrimaryReminderBtn: string;
+  daysLeftText: string;
 }
 
 export interface FAQItem {
   question: string;
   answer: string;
+}
+
+export interface BirthdayReminder {
+  id: string;
+  name: string;
+  birthDate: string;
+  note?: string;
+  isPrimary?: boolean;
+  createdAt: string;
 }
 
 export interface HistoryItem {
