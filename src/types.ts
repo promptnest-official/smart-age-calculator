@@ -120,6 +120,14 @@ export interface TranslationDictionary {
   shareTemplateDiff: string;
   shareTemplateDuration: string;
   printBtn: string;
+  
+  // Date Validation Errors
+  invalidDateTitle: string;
+  invalidDateDiffError: string;
+  invalidAgeError: string;
+  swapDatesBtn: string;
+  resetDatesBtn: string;
+  cannotExportInvalidError: string;
 }
 
 export interface FAQItem {

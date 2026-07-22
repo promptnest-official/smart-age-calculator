@@ -254,6 +254,8 @@ export interface DateDiffResult {
   seconds: number;
   totalMonthsApart: number;
   monthsAndDaysDays: number;
+  isValid: boolean;
+  isSwapped: boolean;
 }
 
 export function calculateDateDifference(
@@ -274,15 +276,25 @@ export function calculateDateDifference(
       minutes: 0, 
       seconds: 0,
       totalMonthsApart: 0,
-      monthsAndDaysDays: 0
+      monthsAndDaysDays: 0,
+      isValid: false,
+      isSwapped: false
     };
   }
 
   let start = new Date(startDateStr);
   let end = new Date(endDateStr);
+  let isSwapped = false;
+  let isValid = true;
 
-  // swap if start is after end
+  // Check if dates are invalid (e.g. start date > end date or NaN)
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+    isValid = false;
+  }
+
   if (start.getTime() > end.getTime()) {
+    isSwapped = true;
+    isValid = false;
     const temp = start;
     start = end;
     end = temp;
@@ -357,7 +369,9 @@ export function calculateDateDifference(
     minutes: totalDays * 24 * 60,
     seconds: totalDays * 24 * 3600,
     totalMonthsApart,
-    monthsAndDaysDays
+    monthsAndDaysDays,
+    isValid,
+    isSwapped
   };
 }
 

@@ -21,7 +21,9 @@ import {
   Save,
   Share2,
   Copy,
-  Printer
+  Printer,
+  AlertTriangle,
+  ArrowLeftRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { jsPDF } from 'jspdf';
@@ -402,6 +404,15 @@ export default function App() {
   };
 
   const handleExportPDF = () => {
+    if (activeTab === 'diff' && isDiffDateInvalid) {
+      showToast(dict.cannotExportInvalidError);
+      return;
+    }
+    if (activeTab === 'age' && isAgeDateInvalid) {
+      showToast(dict.cannotExportInvalidError);
+      return;
+    }
+
     const doc = new jsPDF();
     
     // Header Banner
@@ -561,6 +572,17 @@ export default function App() {
     lang
   );
 
+  // Validation Checks
+  const isDiffDateInvalid = Boolean(startDate && endDate && new Date(startDate).getTime() > new Date(endDate).getTime());
+  const isAgeDateInvalid = Boolean(birthDate && calcDate && new Date(birthDate).getTime() > new Date(calcDate).getTime());
+
+  const handleSwapDiffDates = () => {
+    const temp = startDate;
+    setStartDate(endDate);
+    setEndDate(temp);
+    showToast(pLocal.presetApplied || "Dates swapped!");
+  };
+
   // Milestone Progress calculations
   const ageDecimal = ageResults.years + (ageResults.months / 12) + (ageResults.days / 365);
   const progressPercent = Math.min(100, Math.max(0, (ageDecimal / targetMilestone) * 100));
@@ -578,6 +600,10 @@ export default function App() {
 
     if (type === 'age') {
       if (!birthDate) return;
+      if (isAgeDateInvalid) {
+        showToast(dict.cannotExportInvalidError);
+        return;
+      }
       inputs = { birthDate, birthTime, calcDate, targetMilestone: String(targetMilestone) };
       results = {
         years: String(ageResults.years),
@@ -588,6 +614,10 @@ export default function App() {
       summary = `${birthDate} ➔ ${calcDate}`;
     } else if (type === 'diff') {
       if (!startDate || !endDate) return;
+      if (isDiffDateInvalid) {
+        showToast(dict.cannotExportInvalidError);
+        return;
+      }
       inputs = { startDate, endDate, excludeWeekends: String(excludeWeekends), includeEndDate: String(includeEndDate) };
       results = {
         totalDays: String(diffResults.totalDays),
@@ -871,17 +901,35 @@ export default function App() {
                   </h3>
                   
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                      <Calendar className="w-3 h-3 text-slate-400" />
-                      {dict.birthDateLabel}
+                    <label className="text-[10px] font-bold uppercase tracking-wider flex items-center justify-between">
+                      <span className={`flex items-center gap-1 ${isAgeDateInvalid ? 'text-red-600 font-extrabold' : 'text-slate-400'}`}>
+                        <Calendar className="w-3 h-3" />
+                        {dict.birthDateLabel}
+                      </span>
+                      {isAgeDateInvalid && (
+                        <span className="text-[9px] font-extrabold text-red-600 flex items-center gap-0.5 animate-pulse">
+                          <AlertTriangle className="w-3 h-3" />
+                          {dict.invalidDateTitle}
+                        </span>
+                      )}
                     </label>
                     <input 
                       type="date" 
                       id="input-birth-date"
                       value={birthDate}
                       onChange={(e) => setBirthDate(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded p-2 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 font-mono"
+                      className={`w-full text-xs rounded p-2 focus:outline-none font-mono transition-all ${
+                        isAgeDateInvalid 
+                          ? 'bg-red-50/50 border-2 border-red-400 text-red-900 focus:ring-2 focus:ring-red-400' 
+                          : 'bg-slate-50 border border-slate-200 text-slate-800 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500'
+                      }`}
                     />
+                    {isAgeDateInvalid && (
+                      <p id="age-date-validation-error" className="text-[10px] font-semibold text-red-600 flex items-start gap-1 mt-1 leading-snug">
+                        <AlertTriangle className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
+                        <span>{dict.invalidAgeError}</span>
+                      </p>
+                    )}
                   </div>
 
                   <div className="space-y-1">
@@ -974,7 +1022,51 @@ export default function App() {
 
                 {/* Results Visualizer */}
                 <div id="age-results-pane" className="lg:col-span-8 space-y-4">
-                  
+                  {isAgeDateInvalid ? (
+                    <div id="age-invalid-alert-card" className="bg-gradient-to-br from-red-50 via-white to-amber-50/40 border-2 border-red-200 p-5 rounded-xl shadow-xs space-y-4">
+                      <div className="flex items-start gap-3.5">
+                        <div className="w-11 h-11 rounded-xl bg-red-100 border border-red-200 text-red-600 flex items-center justify-center shrink-0 shadow-2xs">
+                          <AlertTriangle className="w-6 h-6 text-red-600" />
+                        </div>
+                        <div className="space-y-1">
+                          <h4 className="font-extrabold text-sm text-red-950 uppercase tracking-wider flex items-center gap-2">
+                            {dict.invalidDateTitle}
+                          </h4>
+                          <p className="text-xs font-medium text-red-800 leading-relaxed">
+                            {dict.invalidAgeError}
+                          </p>
+                          <div className="pt-1.5 flex flex-wrap items-center gap-3 text-[11px] font-mono text-red-700">
+                            <span className="bg-red-100/80 px-2 py-0.5 rounded border border-red-200 text-red-900 font-bold shadow-2xs">
+                              {dict.birthDateLabel}: <strong>{birthDate}</strong>
+                            </span>
+                            <span className="text-red-400 font-bold">➔</span>
+                            <span className="bg-white/80 px-2 py-0.5 rounded border border-red-100 shadow-2xs">
+                              {dict.calcDateLabel}: <strong className="text-red-900">{calcDate}</strong>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2.5 pt-3 border-t border-red-150">
+                        <button
+                          type="button"
+                          id="btn-reset-age-dates"
+                          onClick={() => {
+                            const todayStr = new Date().toISOString().split('T')[0];
+                            setCalcDate(todayStr);
+                            if (new Date(birthDate) > new Date()) {
+                              setBirthDate(todayStr);
+                            }
+                            showToast(pLocal.presetApplied || "Reset dates!");
+                          }}
+                          className="py-2 px-3.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg transition-all duration-150 flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
+                        >
+                          {dict.resetDatesBtn}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
                   {/* Live Age Counter Grid */}
                   <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                     <div className="flex justify-between items-center mb-3">
@@ -1171,7 +1263,8 @@ export default function App() {
                       <span className="text-[9px] text-slate-400 uppercase font-bold tracking-wider">{dict.approxSleep}</span>
                     </div>
                   </div>
-
+                    </>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -1203,22 +1296,45 @@ export default function App() {
                       id="input-diff-start"
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded p-2 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 font-mono"
+                      className={`w-full text-xs rounded p-2 focus:outline-none font-mono transition-all ${
+                        isDiffDateInvalid
+                          ? 'bg-slate-50 border border-red-200 text-slate-800'
+                          : 'bg-slate-50 border border-slate-200 text-slate-800 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500'
+                      }`}
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                      <Calendar className="w-3 h-3 text-slate-400" />
-                      {dict.endDateLabel}
+                    <label className="text-[10px] font-bold uppercase tracking-wider flex items-center justify-between">
+                      <span className={`flex items-center gap-1 ${isDiffDateInvalid ? 'text-red-600 font-extrabold' : 'text-slate-400'}`}>
+                        <Calendar className="w-3 h-3" />
+                        {dict.endDateLabel}
+                      </span>
+                      {isDiffDateInvalid && (
+                        <span className="text-[9px] font-extrabold text-red-600 flex items-center gap-0.5 animate-pulse">
+                          <AlertTriangle className="w-3 h-3" />
+                          {dict.invalidDateTitle}
+                        </span>
+                      )}
                     </label>
                     <input 
                       type="date" 
                       id="input-diff-end"
                       value={endDate}
+                      min={startDate}
                       onChange={(e) => setEndDate(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded p-2 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 font-mono"
+                      className={`w-full text-xs rounded p-2 focus:outline-none font-mono transition-all ${
+                        isDiffDateInvalid 
+                          ? 'bg-red-50/50 border-2 border-red-400 text-red-900 focus:ring-2 focus:ring-red-400' 
+                          : 'bg-slate-50 border border-slate-200 text-slate-800 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500'
+                      }`}
                     />
+                    {isDiffDateInvalid && (
+                      <p id="diff-date-validation-error" className="text-[10px] font-semibold text-red-600 flex items-start gap-1 mt-1 leading-snug">
+                        <AlertTriangle className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
+                        <span>{dict.invalidDateDiffError}</span>
+                      </p>
+                    )}
                   </div>
 
                   {/* Date Difference Quick-Select Buttons */}
@@ -1285,7 +1401,54 @@ export default function App() {
 
                 {/* Results Visualizer */}
                 <div id="diff-results-pane" className="lg:col-span-8 space-y-4">
-                  
+                  {isDiffDateInvalid ? (
+                    <div id="diff-invalid-alert-card" className="bg-gradient-to-br from-red-50 via-white to-amber-50/40 border-2 border-red-200 p-5 rounded-xl shadow-xs space-y-4">
+                      <div className="flex items-start gap-3.5">
+                        <div className="w-11 h-11 rounded-xl bg-red-100 border border-red-200 text-red-600 flex items-center justify-center shrink-0 shadow-2xs">
+                          <AlertTriangle className="w-6 h-6 text-red-600" />
+                        </div>
+                        <div className="space-y-1">
+                          <h4 className="font-extrabold text-sm text-red-950 uppercase tracking-wider flex items-center gap-2">
+                            {dict.invalidDateTitle}
+                          </h4>
+                          <p className="text-xs font-medium text-red-800 leading-relaxed">
+                            {dict.invalidDateDiffError}
+                          </p>
+                          <div className="pt-1.5 flex flex-wrap items-center gap-3 text-[11px] font-mono text-red-700">
+                            <span className="bg-white/80 px-2 py-0.5 rounded border border-red-100 shadow-2xs">
+                              {dict.startDateLabel}: <strong className="text-red-900">{startDate}</strong>
+                            </span>
+                            <span className="text-red-400 font-bold">➔</span>
+                            <span className="bg-red-100/80 px-2 py-0.5 rounded border border-red-200 text-red-900 font-bold shadow-2xs">
+                              {dict.endDateLabel}: <strong>{endDate}</strong>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2.5 pt-3 border-t border-red-150">
+                        <button
+                          type="button"
+                          id="btn-swap-dates"
+                          onClick={handleSwapDiffDates}
+                          className="py-2 px-3.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg transition-all duration-150 flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
+                        >
+                          <ArrowLeftRight className="w-3.5 h-3.5" />
+                          {dict.swapDatesBtn}
+                        </button>
+
+                        <button
+                          type="button"
+                          id="btn-reset-dates"
+                          onClick={() => handleQuickSelect('last30')}
+                          className="py-2 px-3.5 bg-white hover:bg-red-50 text-red-700 border border-red-200 text-xs font-bold rounded-lg transition-all duration-150 cursor-pointer shadow-2xs"
+                        >
+                          {dict.resetDatesBtn}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
                   <div className="bg-indigo-50/40 border border-indigo-100 p-4 rounded-xl shadow-sm">
                     <div className="flex justify-between items-center mb-3">
                       <h4 className="text-[10px] font-bold text-indigo-600 tracking-wider uppercase flex items-center gap-1.5">
@@ -1423,6 +1586,8 @@ export default function App() {
                       </div>
                     </div>
                   </div>
+                    </>
+                  )}
                 </div>
               </motion.div>
             )}
