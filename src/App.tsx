@@ -31,6 +31,8 @@ import {
   UserPlus,
   Heart,
   Plus,
+  Github,
+  ExternalLink,
   X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -352,6 +354,63 @@ export default function App() {
   // --- Sharing States ---
   const [shareModalOpen, setShareModalOpen] = useState<boolean>(false);
   const [shareType, setShareType] = useState<'age' | 'diff' | 'duration'>('age');
+
+  // --- GitHub Deploy Guide Modal States ---
+  const [deployModalOpen, setDeployModalOpen] = useState<boolean>(false);
+
+  const workflowCode = `name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    environment:
+      name: github-pages
+      url: \${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4`;
+
+  const handleCopyWorkflow = () => {
+    navigator.clipboard.writeText(workflowCode);
+    showToast(dict.workflowCopiedToast || "GitHub Actions workflow script copied to clipboard!");
+  };
 
   // Load shared query parameters on mount
   useEffect(() => {
@@ -1100,7 +1159,17 @@ export default function App() {
           </div>
           
           {/* Europe Language Toggle & Navigation Integration */}
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <button
+              type="button"
+              id="btn-open-github-deploy-modal"
+              onClick={() => setDeployModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 border border-indigo-200/80 rounded text-indigo-700 text-[10px] font-bold uppercase tracking-wider hover:bg-indigo-100/80 hover:border-indigo-300 transition cursor-pointer shadow-2xs"
+            >
+              <Github className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+              <span>{dict.githubDeployBtn || "GitHub Live Auto-Update"}</span>
+            </button>
+
             <button
               onClick={() => setDrawerOpen(true)}
               className="relative flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded text-slate-700 text-[10px] font-bold uppercase tracking-wider hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition cursor-pointer"
@@ -3030,6 +3099,120 @@ export default function App() {
         </div>
       </div>
 
+      {/* GitHub Auto-Deploy Guide Modal */}
+      <AnimatePresence>
+        {deployModalOpen && (
+          <div id="github-deploy-modal-overlay" className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="bg-white rounded-xl border border-slate-200 shadow-2xl max-w-lg w-full p-5 space-y-4 max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <Github className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold text-xs sm:text-sm text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                      <span>{dict.githubDeployTitle}</span>
+                      <span className="text-[8px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded uppercase">1-Min Setup</span>
+                    </h3>
+                    <p className="text-[10px] text-slate-500">
+                      {dict.githubDeploySubtitle}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  id="btn-close-deploy-modal"
+                  onClick={() => setDeployModalOpen(false)}
+                  className="p-1 text-slate-400 hover:text-slate-600 rounded transition cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="space-y-4 text-xs">
+                {/* Step 1 */}
+                <div className="bg-indigo-50/50 p-3.5 rounded-lg border border-indigo-100 space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <h4 className="font-bold text-indigo-950 uppercase text-[11px] tracking-wider flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                      <span>{dict.githubStep1Title}</span>
+                    </h4>
+                    <button
+                      type="button"
+                      id="btn-copy-workflow-modal"
+                      onClick={handleCopyWorkflow}
+                      className="py-1 px-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded text-[10px] transition cursor-pointer shadow-2xs flex items-center gap-1 shrink-0"
+                    >
+                      <Copy className="w-3 h-3" />
+                      <span>{dict.copyWorkflowBtn}</span>
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-slate-600">
+                    {dict.githubStep1Desc}
+                  </p>
+                  
+                  <div className="bg-slate-900 text-slate-200 rounded p-2.5 font-mono text-[9.5px] max-h-36 overflow-y-auto leading-relaxed border border-slate-800 select-all">
+                    <pre>{workflowCode}</pre>
+                  </div>
+                </div>
+
+                {/* Step 2 */}
+                <div className="bg-slate-50 p-3.5 rounded-lg border border-slate-200 space-y-2">
+                  <h4 className="font-bold text-slate-900 uppercase text-[11px] tracking-wider flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 shrink-0"></span>
+                    <span>{dict.githubStep2Title}</span>
+                  </h4>
+                  <p className="text-[11px] text-slate-600 leading-relaxed">
+                    {dict.githubStep2Desc}
+                  </p>
+                  <a
+                    href="https://github.com/promptnest-official/smart-age-calculator"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 hover:text-indigo-800 hover:underline"
+                  >
+                    <span>{dict.openGithubRepoBtn} (promptnest-official/smart-age-calculator)</span>
+                    <ExternalLink className="w-3 h-3 shrink-0" />
+                  </a>
+                </div>
+
+                {/* Step 3 */}
+                <div className="bg-slate-50 p-3.5 rounded-lg border border-slate-200 space-y-1.5">
+                  <h4 className="font-bold text-slate-900 uppercase text-[11px] tracking-wider flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0"></span>
+                    <span>{dict.githubStep3Title}</span>
+                  </h4>
+                  <p className="text-[11px] text-slate-600 leading-relaxed">
+                    {dict.githubStep3Desc}
+                  </p>
+                </div>
+
+                <div className="bg-emerald-50 border border-emerald-200/80 p-3 rounded-lg text-[11px] text-emerald-900 flex items-start gap-2">
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <p>
+                    <strong>Done!</strong> Future changes you sync to GitHub from AI Studio will automatically deploy live to GitHub Pages within ~60 seconds!
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setDeployModalOpen(false)}
+                  className="py-2 px-4 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-lg transition cursor-pointer"
+                >
+                  {dict.close}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

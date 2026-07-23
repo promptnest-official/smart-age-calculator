@@ -156,6 +156,20 @@ export interface TranslationDictionary {
   export30DaysPdfDesc: string;
   historyPdfExportedToast: string;
   noHistoryToExportError: string;
+
+  // GitHub Auto-Deploy Guide
+  githubDeployBtn: string;
+  githubDeployTitle: string;
+  githubDeploySubtitle: string;
+  githubStep1Title: string;
+  githubStep1Desc: string;
+  githubStep2Title: string;
+  githubStep2Desc: string;
+  githubStep3Title: string;
+  githubStep3Desc: string;
+  copyWorkflowBtn: string;
+  workflowCopiedToast: string;
+  openGithubRepoBtn: string;
 }
 
 export interface FAQItem {
