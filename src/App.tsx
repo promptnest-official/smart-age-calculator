@@ -1160,15 +1160,6 @@ jobs:
           
           {/* Europe Language Toggle & Navigation Integration */}
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            <button
-              type="button"
-              id="btn-open-github-deploy-modal"
-              onClick={() => setDeployModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 border border-indigo-200/80 rounded text-indigo-700 text-[10px] font-bold uppercase tracking-wider hover:bg-indigo-100/80 hover:border-indigo-300 transition cursor-pointer shadow-2xs"
-            >
-              <Github className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-              <span>{dict.githubDeployBtn || "GitHub Live Auto-Update"}</span>
-            </button>
 
             <button
               onClick={() => setDrawerOpen(true)}
