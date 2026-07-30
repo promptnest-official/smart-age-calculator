@@ -33,6 +33,7 @@ import {
   Plus,
   Github,
   ExternalLink,
+  Tag,
   X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -350,6 +351,9 @@ export default function App() {
       setAddReminderModalOpen(true);
     }, 50);
   };
+
+  // --- Calculation Note / Label State ---
+  const [calcNote, setCalcNote] = useState<string>('');
 
   // --- Sharing States ---
   const [shareModalOpen, setShareModalOpen] = useState<boolean>(false);
@@ -842,6 +846,8 @@ jobs:
       summary = `${durStartDate} ${opSign} ${durYears}y ${durMonths}m ${durWeeks}w ${durDays}d`;
     }
 
+    const noteToSave = calcNote.trim();
+
     const newItem: HistoryItem = {
       id: String(Date.now()),
       type,
@@ -849,22 +855,29 @@ jobs:
       inputs,
       results,
       summary,
+      label: noteToSave || undefined,
+      note: noteToSave || undefined,
+      createdAt: new Date().toISOString(),
     };
 
     setHistory(prev => {
       // Avoid exact duplicates in history
       const filtered = prev.filter(item => 
-        !(item.type === type && JSON.stringify(item.inputs) === JSON.stringify(inputs))
+        !(item.type === type && JSON.stringify(item.inputs) === JSON.stringify(inputs) && (item.note || '') === noteToSave)
       );
       const updated = [newItem, ...filtered];
       return updated.slice(0, 50);
     });
 
+    setCalcNote('');
     showToast(dict.historySavedToast);
   };
 
   const loadHistoryItem = (item: HistoryItem) => {
     setActiveTab(item.type);
+    if (item.note || item.label) {
+      setCalcNote(item.note || item.label || '');
+    }
     if (item.type === 'age') {
       if (item.inputs.birthDate) setBirthDate(item.inputs.birthDate);
       if (item.inputs.birthTime) setBirthTime(item.inputs.birthTime);
@@ -902,7 +915,7 @@ jobs:
     if (history.length === 0) return;
 
     // CSV headers
-    const headers = ["ID", "Calculation Type", "Calculated At", "Summary", "Inputs", "Results"];
+    const headers = ["ID", "Calculation Type", "Calculated At", "Custom Label / Note", "Summary", "Inputs", "Results"];
     
     // Map rows
     const rows = history.map(item => {
@@ -926,6 +939,7 @@ jobs:
         item.id,
         displayType,
         item.timestamp,
+        item.note || item.label || '',
         item.summary,
         inputStr,
         resultStr
@@ -1535,6 +1549,35 @@ jobs:
                         <span className="text-[9px] text-indigo-500 font-bold uppercase tracking-wider">{dict.seconds}</span>
                       </div>
                     </div>
+
+                    {/* Custom Note / Label Input Field for Saving to History */}
+                    <div id="age-custom-note-bar" className="mt-3.5 pt-3 border-t border-slate-150 bg-slate-50/80 p-2.5 rounded-lg border border-slate-200/80 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+                      <div className="flex-1 flex items-center gap-2">
+                        <Tag className="w-4 h-4 text-indigo-600 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <label htmlFor="input-note-age" className="text-[9px] font-extrabold text-slate-500 uppercase tracking-wider block mb-0.5">
+                            {dict.customNoteLabel}
+                          </label>
+                          <input
+                            type="text"
+                            id="input-note-age"
+                            value={calcNote}
+                            onChange={(e) => setCalcNote(e.target.value)}
+                            placeholder={dict.customNotePlaceholder}
+                            className="w-full bg-white border border-slate-200 text-slate-800 text-xs rounded px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 font-medium placeholder:text-slate-400"
+                          />
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        id="btn-save-age-history-card"
+                        onClick={() => saveCalculationToHistory('age')}
+                        className="py-2 px-3.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-95 shrink-0 self-end sm:self-auto"
+                      >
+                        <Save className="w-3.5 h-3.5 text-white" />
+                        <span>{dict.historySaveBtn}</span>
+                      </button>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2087,6 +2130,35 @@ jobs:
                         </div>
                       </div>
                     </div>
+
+                    {/* Custom Note / Label Input Field for Saving to History */}
+                    <div id="diff-custom-note-bar" className="mt-3 pt-3 border-t border-indigo-100 bg-white/90 p-2.5 rounded-lg border border-indigo-200/60 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 shadow-2xs">
+                      <div className="flex-1 flex items-center gap-2">
+                        <Tag className="w-4 h-4 text-indigo-600 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <label htmlFor="input-note-diff" className="text-[9px] font-extrabold text-slate-500 uppercase tracking-wider block mb-0.5">
+                            {dict.customNoteLabel}
+                          </label>
+                          <input
+                            type="text"
+                            id="input-note-diff"
+                            value={calcNote}
+                            onChange={(e) => setCalcNote(e.target.value)}
+                            placeholder={dict.customNotePlaceholder}
+                            className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 font-medium placeholder:text-slate-400"
+                          />
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        id="btn-save-diff-history-card"
+                        onClick={() => saveCalculationToHistory('diff')}
+                        className="py-2 px-3.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-95 shrink-0 self-end sm:self-auto"
+                      >
+                        <Save className="w-3.5 h-3.5 text-white" />
+                        <span>{dict.historySaveBtn}</span>
+                      </button>
+                    </div>
                   </div>
 
                   {/* Months & Days Apart */}
@@ -2332,6 +2404,35 @@ jobs:
                       <span className="inline-flex items-center gap-1 px-3 py-1 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100 uppercase tracking-wider">
                         {durationResult.dayOfWeek || '---'}
                       </span>
+                    </div>
+
+                    {/* Custom Note / Label Input Field for Saving to History */}
+                    <div id="duration-custom-note-bar" className="mt-4 p-3 bg-white/90 rounded-xl border border-indigo-200/60 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 shadow-2xs w-full max-w-lg">
+                      <div className="flex-1 flex items-center gap-2">
+                        <Tag className="w-4 h-4 text-indigo-600 shrink-0" />
+                        <div className="flex-1 min-w-0 text-left">
+                          <label htmlFor="input-note-duration" className="text-[9px] font-extrabold text-slate-500 uppercase tracking-wider block mb-0.5">
+                            {dict.customNoteLabel}
+                          </label>
+                          <input
+                            type="text"
+                            id="input-note-duration"
+                            value={calcNote}
+                            onChange={(e) => setCalcNote(e.target.value)}
+                            placeholder={dict.customNotePlaceholder}
+                            className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 font-medium placeholder:text-slate-400"
+                          />
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        id="btn-save-duration-history-card"
+                        onClick={() => saveCalculationToHistory('duration')}
+                        className="py-2 px-3.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-95 shrink-0 self-end sm:self-auto"
+                      >
+                        <Save className="w-3.5 h-3.5 text-white" />
+                        <span>{dict.historySaveBtn}</span>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -2628,6 +2729,12 @@ jobs:
                         </div>
 
                         <div className="space-y-1">
+                          {(item.note || item.label) && (
+                            <div className="inline-flex items-center gap-1.5 bg-indigo-100/80 border border-indigo-200 text-indigo-900 px-2 py-0.5 rounded text-[10px] font-bold mb-1">
+                              <Tag className="w-3 h-3 text-indigo-600 shrink-0" />
+                              <span className="truncate">{item.note || item.label}</span>
+                            </div>
+                          )}
                           <p className="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider leading-none">
                             {item.summary}
                           </p>

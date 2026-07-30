@@ -157,6 +157,10 @@ export interface TranslationDictionary {
   historyPdfExportedToast: string;
   noHistoryToExportError: string;
 
+  // Custom Note / Label for Calculations
+  customNoteLabel: string;
+  customNotePlaceholder: string;
+
   // GitHub Auto-Deploy Guide
   githubDeployBtn: string;
   githubDeployTitle: string;
@@ -193,4 +197,7 @@ export interface HistoryItem {
   summary: string;
   inputs: Record<string, string>;
   results: Record<string, string>;
+  label?: string;
+  note?: string;
+  createdAt?: string;
 }
