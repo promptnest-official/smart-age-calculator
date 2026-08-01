@@ -1507,11 +1507,13 @@ jobs:
                         </button>
                         <button
                           type="button"
+                          id="btn-export-pdf-age"
                           onClick={handleExportPDF}
-                          className="py-1 px-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[9px] font-bold uppercase tracking-wider rounded transition flex items-center gap-1 cursor-pointer shadow-xs"
+                          className="py-1 px-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[9px] font-bold uppercase tracking-wider rounded transition flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
+                          title="Export Age Results as PDF"
                         >
-                          <FileDown className="w-3 h-3" />
-                          {dict.exportPdfBtn}
+                          <FileDown className="w-3.5 h-3.5 text-white shrink-0" />
+                          <span>{dict.exportPdfBtn}</span>
                         </button>
                       </div>
                     </div>
@@ -2107,11 +2109,13 @@ jobs:
                         </button>
                         <button
                           type="button"
+                          id="btn-export-pdf-diff"
                           onClick={handleExportPDF}
-                          className="py-1 px-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[9px] font-bold uppercase tracking-wider rounded transition flex items-center gap-1 cursor-pointer shadow-xs"
+                          className="py-1 px-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[9px] font-bold uppercase tracking-wider rounded transition flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
+                          title="Export Date Difference as PDF"
                         >
-                          <FileDown className="w-3 h-3" />
-                          {dict.exportPdfBtn}
+                          <FileDown className="w-3.5 h-3.5 text-white shrink-0" />
+                          <span>{dict.exportPdfBtn}</span>
                         </button>
                       </div>
                     </div>
@@ -2388,11 +2392,13 @@ jobs:
                         </button>
                         <button
                           type="button"
+                          id="btn-export-pdf-duration"
                           onClick={handleExportPDF}
-                          className="py-1 px-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[9px] font-bold uppercase tracking-wider rounded transition flex items-center gap-1 cursor-pointer shadow-xs"
+                          className="py-1 px-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[9px] font-bold uppercase tracking-wider rounded transition flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
+                          title="Export Duration Result as PDF"
                         >
-                          <FileDown className="w-3 h-3" />
-                          {dict.exportPdfBtn}
+                          <FileDown className="w-3.5 h-3.5 text-white shrink-0" />
+                          <span>{dict.exportPdfBtn}</span>
                         </button>
                       </div>
                     </div>
@@ -2671,7 +2677,7 @@ jobs:
                       className="w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[10px] font-extrabold uppercase tracking-wider transition cursor-pointer shadow-xs active:scale-95"
                       title={dict.export30DaysPdfDesc}
                     >
-                      <FileText className="w-3.5 h-3.5 text-white shrink-0" />
+                      <FileDown className="w-3.5 h-3.5 text-white shrink-0" />
                       <span>{dict.export30DaysPdfBtn}</span>
                     </button>
 
